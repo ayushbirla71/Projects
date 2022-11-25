@@ -15,6 +15,7 @@ const fullNameRegex = /^[A-Za-z][A-Za-z ,._]{5,50}$/
 
 const createcollege = async function (req, res) {
   try {
+    res.setHeader('Access-Control-Allow-Origin','*')
     let { name, fullName, logoLink } = req.body;
     if (!Object.keys(req.body).length > 0) {
       return res.status(400).send({ status: false, message: "Please provide Details" })
@@ -81,7 +82,7 @@ const createcollege = async function (req, res) {
 
 const getdetailsofinterns = async function (req, res) {
   try {
-
+    res.setHeader('Access-Control-Allow-Origin','*')
     let { collegeName } = req.query;
     if (!collegeName) {
       return res.status(400).send({ status: false, message: "Please provide collegeName" })

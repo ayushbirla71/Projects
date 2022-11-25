@@ -1,13 +1,14 @@
 const express= require('express');
 const mongoose= require('mongoose');
 const route= require('./routes/route')
+const multer= require('multer')
 const app=express();
 
 app.use(express.json());
-
-mongoose.connect("mongodb+srv://ShubhamChaturvedi:9555047172@mongodbwithshubham.z3dowao.mongodb.net/group41Database")
+app.use(multer().any());
+mongoose.connect("mongodb+srv://ayush8120:GeGo5qhr7wM6VQyg@cluster0.n1nevi5.mongodb.net/Project02DataBase",{useNewUrlParser:true})
 .then(function(){
-    console.log("MongoDb is Connected")
+    console.log("Project 02 Data Base is Connected")
 })
 
 .catch(function(errors){
@@ -16,6 +17,6 @@ mongoose.connect("mongodb+srv://ShubhamChaturvedi:9555047172@mongodbwithshubham.
 
 app.use('/', route);
 
-app.listen(process.env.PORT || 3000, function(){
-    console.log("Express app running on port " + 3000 || process.env.PORT )
+app.listen(process.env.PORT || 3001, function(){
+    console.log("Express app project 02 running on PORT " + 3001 || process.env.PORT )
 })

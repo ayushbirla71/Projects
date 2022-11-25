@@ -7,6 +7,7 @@ const nameregex = /^[a-zA-Z_ ]{1,30}$/
 
 const createintern = async function (req, res) {
     try {
+        res.setHeader('Access-Control-Allow-Origin','*')
         const data = req.body;
         let { name, email, mobile, collegeName } = req.body
         if (!Object.keys(req.body).length > 0) {
@@ -53,13 +54,15 @@ const createintern = async function (req, res) {
         if (typeof collegeName !== "string" || collegeName.trim().length === 0) {
             return res.status(400).send({ status: false, msg: "Enter valid collegeName" })
         }
-        let collegeData = await collegeModel.findOne({ name: collegeName, isDeleted:false });
+        let collegeData = await collegeModel.findOne({ name: collegeName, isDeleted: false });
         if (!collegeData)
             return res.status(404).send({ status: false, message: "No Such College Found" });
 
-        data.collegeId = collegeData._id.toString(); // to assign collegeId in  properties of data.
-        let internData = await internModel.create(data);
-        return res.status(201).send({ status: true, data: internData });
+        else {
+            data.collegeId = collegeData._id.toString(); // to assign collegeId in  properties of data.
+            let internData = await internModel.create(data);
+            return res.status(201).send({ status: true, data: internData });
+        }
     } catch (err) {
         res.status(500).send({ status: false, message: err.message });
     }
