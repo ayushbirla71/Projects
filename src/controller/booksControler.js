@@ -1,5 +1,6 @@
 const bookModel = require('../models/bookModel')
 const userModel = require('../models/userModel')
+const reviewModel=require('../models/reviewModel')
 const validate = require('../validator/validators')
 
 const { isValidObjectId } = require("mongoose")
@@ -51,4 +52,57 @@ const getAllBooks = async function (req, res) {
     }
 }
 
-module.exports = { bookCreate, getAllBooks }
+const getbooksBybookId= async function(req, res){
+    try{
+        let data=req.params.bookId
+        if(!isValidObjectId(data))return res.status(400).send({statu:false,message:"pls provide valid BookId"})
+        let bookDetails=await bookModel.findById(data)
+        let reviewDetails=await reviewModel.find({bookId:bookDetails.id})
+        if (reviewDetails.length == 0) {
+            var x = `no review of ${bookDetails.title} this book`;
+          } else {
+            var x = reviewDetails;
+          }
+          bookDetails._doc.reviewsData = x 
+          return res.status(200).send({status:true,message:"Book List",data:bookDetails})
+
+    }
+    catch (error) {
+        console.log("This is the error :", error.message)
+        res.status(500).send({ status: false, data: error.message })
+    }
+}
+
+const bookUpdated=async function(req,res){
+    try{
+        let data=req.params.bookId
+        if(!isValidObjectId(data))return res.status(400).send({status:false,message:"Pls provide valid BookId"})
+        let data1=req.body
+        if(Object.keys(data).length==0)return res.status(400).send({status:false,message:"Pls provide data"})
+        let {title,excerpt,releasedAt,ISBN}=req.body
+        let keys={}
+        console.log(title)
+        if(title){
+            keys.title=title
+        }
+        console.log(keys)
+        if(excerpt){
+            keys.excerpt=excerpt
+        }
+        if(releasedAt){
+            keys.releasedAt=releasedAt
+        }
+        if(ISBN){
+            keys.ISBN=ISBN
+        }
+        let updatedata=await bookModel.findByIdAndUpdate(data,{$set:keys},{ new: true })
+        return res.status(200).send({status:true,data:updatedata})
+
+    }
+    catch (error) {
+        console.log("This is the error :", error.message)
+        res.status(500).send({ status: false, data: error.message })
+    }
+}
+
+module.exports = { bookCreate, getAllBooks ,getbooksBybookId,bookUpdated}

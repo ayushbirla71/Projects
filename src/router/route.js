@@ -12,6 +12,8 @@ router.post('/login',userController.userLogin)
 router.get('/user',middelware.Authentication)
 router.post('/books',middelware.Authentication ,bookController.bookCreate)
 router.get('/books',middelware.Authentication,bookController.getAllBooks)
+router.get('/books/:bookId',middelware.Authentication,bookController.getbooksBybookId)
+router.put('/books/:bookId',bookController.bookUpdated)
 router.post("/books/:bookId/review",reviewControler.createReview)
 router.put("/books/:bookId/review/:reviewId",update.updateReview)
 
