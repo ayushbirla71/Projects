@@ -8,7 +8,7 @@ const Authentication = function (req, res, next) {
         jwt.verify(token, "xyz", (error, decodedToken) => {
             if (error) { return res.status(401).send({ status: false, msg: error.message }) }
 
-            req.authorId = decodedToken.userId
+            req.decodedUserId = decodedToken.userId
             next()
         })
 

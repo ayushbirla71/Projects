@@ -20,6 +20,7 @@ const bookCreate = async function (req, res) {
         if (!subcategory) return res.status(400).send({ status: false, message: "Pls provide subcategory" })
         let userData = await userModel.findById(userId)
         if (!userData) return res.status(404).send({ status: false, message: "User not found" })
+        if(req.decodedUserId!=userId)return res.status(401).send({status:false,message:"Your not authorised to create book"})
         let createBook = await bookModel.create(data)
         return res.status(201).send({ status: true, message: "Success", data: createBook })
     }
