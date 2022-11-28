@@ -7,7 +7,7 @@ const createReview=async (req,res)=>{
     data.bookId=req.params.bookId
     data.reviewedAt=new Date()
     const createdReview=await reviewModel.create(data)
-    bookModel.findByIdAndUpdate(req.params.bookId,{$inc:{reviews:1}})
+   let data2=await bookModel.findByIdAndUpdate(data.bookId,{$inc:{reviews:1}})
     res.status(201).send({status:true,message:"Review created",data:createdReview})
 }
 

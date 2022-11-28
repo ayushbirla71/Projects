@@ -32,8 +32,7 @@ const bookSchema = new mongoose.Schema({
     },
     reviews: {
         type:Number, 
-        default: 0,
-        comment: Number   
+        default: 0, 
     },
     isDeleted:{
         type:Boolean,
@@ -44,7 +43,7 @@ const bookSchema = new mongoose.Schema({
     },
     releasedAt:{
         type:Date,
-        require:true
+        require:true,
     }
 
 },{timestamps:true})

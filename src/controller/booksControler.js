@@ -6,7 +6,7 @@ const bookCreate = async function (req, res) {
     try {
         let data = req.body
         if (Object.keys(data).length == 0) return res.status(400).send({ status: false, message: "pls provide book ditails in body" })
-        let { title, excerpt, userId, ISBN, category, subcategory } = data
+        let { title, excerpt, userId, ISBN, category, subcategory,releasedAt } = data
         if (!title) return res.status(400).send({ status: false, message: "Pls provide title" })
         let dublicatTitle = await bookModel.findOne({ title })
         if (dublicatTitle) return res.status(400).send({ status: false, message: "pls provide unique title" })
@@ -18,6 +18,7 @@ const bookCreate = async function (req, res) {
         if (dublicatISBN) return res.status(400).send({ status: false, message: "pls provide unique ISBN" })
         if (!category) return res.status(400).send({ status: false, message: "Pls provide category" })
         if (!subcategory) return res.status(400).send({ status: false, message: "Pls provide subcategory" })
+        if(!releasedAt)return res.status(400).send({status:false, message:"Pls provide released date  (YYYY-MM-DD)"})
         let userData = await userModel.findById(userId)
         if (!userData) return res.status(404).send({ status: false, message: "User not found" })
         if(req.decodedUserId!=userId)return res.status(401).send({status:false,message:"Your not authorised to create book"})

@@ -52,7 +52,7 @@ const userLogin = async function (req, res) {
       },
       "xyz", {
 
-      expiresIn: '1h' // expires in 24 hours
+      expiresIn: '24h' // expires in 24 hours
 
     }
     );
