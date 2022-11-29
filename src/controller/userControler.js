@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken')
 const emailValidation = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/
 const mobileValidation = /^([+]\d{2})?\d{10}$/
 const nameregex = /^[a-zA-Z_ ]{1,30}$/
-const passwordValidation=/^[a-zA-Z0-9]{8,15}$/
+const passwordValidation = /^[a-zA-Z0-9]{8,15}$/
 
 
 const userCreate = async function (req, res) {
@@ -24,7 +24,7 @@ const userCreate = async function (req, res) {
       let dublicatEmail = await userModel.findOne({ email })
       if (dublicatEmail) return res.status(400).send({ status: false, message: "Pls provide unique Email" })
       if (!password) return res.status(400).send({ status: false, message: "password is mandatory" })
-      if(!password.match(passwordValidation))return res.status(400).send({status:false,message:"Pls privide Password minLen 8, maxLen 15"})
+      if (!password.match(passwordValidation)) return res.status(400).send({ status: false, message: "Pls privide Password minLen 8, maxLen 15" })
       let createUser = await userModel.create(data)
       return res.status(201).send({ status: true, message: 'Success', data: createUser })
     }
@@ -44,7 +44,7 @@ const userLogin = async function (req, res) {
     if (!email) return res.status(400).send({ status: false, message: "Pls provide email" })
     if (!password) return res.status(400).send({ status: false, message: "Pls provide password" })
     let user = await userModel.findOne({ email, password })
-    if (!user) return res.status(400).send({ status: false, message: "username or the password is not corerct" })
+    if (!user) return res.status(401).send({ status: false, message: "username or the password is not corerct" })
     console.log(user)
     let token = jwt.sign(
       {
