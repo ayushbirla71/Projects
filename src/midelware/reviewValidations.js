@@ -10,10 +10,8 @@ const reviewValidator=async (req,res,next)=>{
     }
     
     //reviewedBy validations
-if(!req.body.reviewedBy){
-    return res.status(400).send({status:false,message:"reviewedBy field is not provided"})
-}
-else{
+
+if(req.body.reviewedBy){
     if(typeof req.body.reviewedBy!="string"){
         return res.status(400).send({status:false,message:"reviewedBy should be string"})
     }
@@ -38,7 +36,7 @@ else{
 
     //validations for ratings
 
-    if(!req.body.rating){
+    if(req.body.rating==undefined){
         return res.status(400).send({status:false,message:"Rating should be provided in request body"})
     }
     else{
