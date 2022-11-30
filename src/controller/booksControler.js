@@ -154,6 +154,7 @@ const bookDelete = async function (req, res) {
         if (!bookDetails) return res.status(404).send({ status: false, message: "book dose not exist" })
         if (bookDetails.isDeleted == true) return res.status(404).send({ status: false, message: "book not found" })
         if (bookDetails.userId != req.decodedUserId) return res.status(403).send({ status: false, message: "You are not authorised for delete this doc " })
+        let review= await reviewModel.updateMany({bookId:bookId},{ $set: {isDeleted:true}})
         let bookDeleted = await bookModel.findByIdAndUpdate(bookId, { isDeleted: true, deletedAt: Date.now() }, { new: true })
         return res.status(200).send({ status: true, message: "Book deleted successful" })
 
