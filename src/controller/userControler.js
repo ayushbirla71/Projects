@@ -5,7 +5,7 @@ const mobileValidation = /^([+]\d{2})?\d{10}$/
 const nameregex = /^[a-zA-Z_ ]{1,30}$/
 const passwordValidation = /^[a-zA-Z0-9]{8,15}$/
 
-
+/////////////////////////////////////////////~Create User Api~//////////////////////////////////
 const userCreate = async function (req, res) {
   try {
     let data = req.body
@@ -35,7 +35,7 @@ const userCreate = async function (req, res) {
   }
 }
 
-
+/////////////////////////////////////////////~Login User Api~//////////////////////////////////
 const userLogin = async function (req, res) {
   try {
     let data = req.body

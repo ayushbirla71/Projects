@@ -3,9 +3,9 @@ const userModel = require('../models/userModel')
 const reviewModel = require('../models/reviewModel')
 const validDate = /\d{4}-\d{2}-\d{2}/
 const validISBN=/^(?=(?:\D*\d){10}(?:(?:\D*\d){3})?$)[\d-]+$/gm
-
 const { isValidObjectId } = require("mongoose")
 
+/////////////////////////////////////////////~Book Create Api~//////////////////////////////////
 const bookCreate = async function (req, res) {
     try {
         let data = req.body
@@ -58,6 +58,7 @@ const bookCreate = async function (req, res) {
     }
 }
 
+/////////////////////////////////////////////~Get Books Api~//////////////////////////////////
 const getAllBooks = async function (req, res) {
     try {
         let data = req.query
@@ -76,6 +77,7 @@ const getAllBooks = async function (req, res) {
     }
 }
 
+/////////////////////////////////////////////~Get Books by id Api~//////////////////////////////////
 const getbooksBybookId = async function (req, res) {
     try {
         let data = req.params.bookId
@@ -94,6 +96,7 @@ const getbooksBybookId = async function (req, res) {
     }
 }
 
+/////////////////////////////////////////////~Book Update Api~//////////////////////////////////
 const bookUpdated = async function (req, res) {
     try {
         let data = req.params.bookId
@@ -148,6 +151,7 @@ const bookUpdated = async function (req, res) {
     }
 }
 
+/////////////////////////////////////////////~Book Delete Api~//////////////////////////////////
 const bookDelete = async function (req, res) {
     try {
         let bookId = req.params.bookId

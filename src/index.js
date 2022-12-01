@@ -6,7 +6,7 @@ const app=express()
 app.use(express.json())
 
 mongoose.connect("mongodb+srv://ayush8120:GeGo5qhr7wM6VQyg@cluster0.n1nevi5.mongodb.net/groupXDatabase?retryWrites=true&w=majority",{useNewUrlParser:true})
-.then(()=>{console.log("Project 03 Data Base in connected")})
+.then(()=>{console.log("Project 03 Data Base is connected")})
 .catch((error)=>{console.log({error:error.message})})
 
 app.use('/',route)

@@ -3,25 +3,26 @@ const router= express.Router();
 const bookController=require('../controller/booksControler');
 const userController=require('../controller/userControler');
 const reviewControler=require('../controller/reviewController')
-const reviewValidator=require("../midelware/reviewValidations")
-const deleteReview=require("../controller/deleteReview")
-const update =require("../controller/update")
+const reviewValidator=require("../middleware/reviewValidations")
+/////////////////////////////////////////////~Muddelware~//////////////////////////////////
+const middleware=require('../middleware/auth')
 
-const middelware=require('../midelware/auth')
-
+/////////////////////////////////////////////~ROUTERS~//////////////////////////////////
 router.post('/register', userController.userCreate)
 router.post('/login',userController.userLogin)
-router.post('/books',middelware.Authentication ,bookController.bookCreate)
-router.get('/books',middelware.Authentication,bookController.getAllBooks)
-router.get('/books/:bookId',middelware.Authentication,bookController.getbooksBybookId)
-router.put('/books/:bookId',middelware.Authentication,bookController.bookUpdated)
-router.delete('/books/:bookId',middelware.Authentication,bookController.bookDelete)
-router.post("/books/:bookId/review",middelware.Authentication,reviewValidator.reviewValidator,reviewControler.createReview)
-router.put("/books/:bookId/review/:reviewId",update.updateReview)
-router.delete("/books/:bookId/review/:reviewId",deleteReview.deleteBook)
+router.post('/books',middleware.Authentication ,bookController.bookCreate)
+router.get('/books',middleware.Authentication,bookController.getAllBooks)
+router.get('/books/:bookId',middleware.Authentication,bookController.getbooksBybookId)
+router.put('/books/:bookId',middleware.Authentication,bookController.bookUpdated)
+router.delete('/books/:bookId',middleware.Authentication,bookController.bookDelete)
+router.post("/books/:bookId/review",middleware.Authentication,reviewValidator.reviewValidator,reviewControler.createReview)
+router.put("/books/:bookId/review/:reviewId",reviewControler.updateReview)
+router.delete("/books/:bookId/review/:reviewId",reviewControler.deleteReview)
+
+
 router.all('/*',function(req,res){
     return res.status(400).send({status:false, message:"pls provide valid path"})
 })
 
-
+/////////////////////////////////////////////~MODULE~//////////////////////////////////
 module.exports=router
