@@ -2,6 +2,7 @@ const bookModel = require('../models/bookModel')
 const userModel = require('../models/userModel')
 const reviewModel = require('../models/reviewModel')
 const validDate = /\d{4}-\d{2}-\d{2}/
+const validISBN=/^(?=(?:\D*\d){10}(?:(?:\D*\d){3})?$)[\d-]+$/gm
 
 const { isValidObjectId } = require("mongoose")
 
@@ -29,6 +30,7 @@ const bookCreate = async function (req, res) {
         if (typeof ISBN !== "string" || ISBN.trim().length === 0) {
             return res.status(400).send({ status: false, msg: "Enter valid ISBN" })
         };
+        if(ISBN.match(validISBN))return res.status(400).send({status:false, message:"pls enter valid ISBN (10 or 13) digits in the input Only."})
         let dublicatISBN = await bookModel.findOne({ ISBN })
         if (dublicatISBN) return res.status(400).send({ status: false, message: "pls provide unique ISBN" })
         if (!category) return res.status(400).send({ status: false, message: "Pls provide category" })
@@ -46,7 +48,7 @@ const bookCreate = async function (req, res) {
          if (!releasedAt.check(validDate)) return res.status(400).send({ status: false, message: "Pls enter valid date (YYYY-MM-DD)format" })
         let userData = await userModel.findById(userId)
         if (!userData) return res.status(404).send({ status: false, message: "User not found" })
-        if (req.decodedUserId != userId) return res.status(401).send({ status: false, message: "Your not authorised to create book" })
+        if (req.decodedUserId != userId) return res.status(403).send({ status: false, message: "Your not authorised to create book" })
         let createBook = await bookModel.create(data)
         return res.status(201).send({ status: true, message: "Success", data: createBook })
     }
@@ -100,7 +102,6 @@ const bookUpdated = async function (req, res) {
         if (Object.keys(data1).length == 0) return res.status(400).send({ status: false, message: "Pls provide data" })
         let { userId, isDeleted } = await bookModel.findById(data).select({ userId: 1, _id: 0, isDeleted: 1 })
         if (!userId || isDeleted == true) return res.status(404).send({ status: false, message: "Book not found" })
-        if (userId != req.decodedUserId) return res.status(403).send({ status: false, message: "You are not authorised for update this doc" })
         let { title, excerpt, releasedAt, ISBN } = req.body
         let keys = {}
         if (title) {
@@ -136,9 +137,10 @@ const bookUpdated = async function (req, res) {
             let dublicatISBN = await bookModel.findOne({ ISBN });
             if (dublicatISBN) return res.status(400).send({ status: false, message: "this ISBN is allredy present" })
         }
+        if (userId != req.decodedUserId) return res.status(403).send({ status: false, message: "You are not authorised for update this doc" })
         let updatedata = await bookModel.findByIdAndUpdate(data, { $set: keys, updatedAt: Date.now() }, { new: true })
         return res.status(200).send({ status: true,message:"Success", data: updatedata })
-
+        
     }
     catch (error) {
         console.log("This is the error :", error.message)

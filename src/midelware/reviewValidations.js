@@ -15,8 +15,15 @@ if(req.body.reviewedBy){
     if(typeof req.body.reviewedBy!="string"){
         return res.status(400).send({status:false,message:"reviewedBy should be string"})
     }
+    else{
+            const validate=req.body.reviewedBy.match(/^[A-Z][-a-zA-Z ]+$/)
+            if(!validate){
+                return res.status(400).send({status:false,message:"Invalid name of reviewer"})
+            }
+        }
+    }
    
-}
+
 //===============================================================================================
 
     
