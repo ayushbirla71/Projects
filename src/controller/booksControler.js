@@ -1,7 +1,7 @@
 const bookModel = require('../models/bookModel')
 const userModel = require('../models/userModel')
 const reviewModel = require('../models/reviewModel')
-const validate = /^(\d{4}-\d{2}-\d{2})$/gm
+const validDate = /\d{4}-\d{2}-\d{2}/
 
 const { isValidObjectId } = require("mongoose")
 
@@ -43,7 +43,7 @@ const bookCreate = async function (req, res) {
         if (typeof releasedAt !== "string" || releasedAt.trim().length === 0) {
             return res.status(400).send({ status: false, msg: "Enter valid releasedAt" })
         };
-        if (!validate.match(releasedAt)) return res.status(400).send({ status: false, message: "Pls enter valid date (YYYY-MM-DD)format" })
+         if (!releasedAt.check(validDate)) return res.status(400).send({ status: false, message: "Pls enter valid date (YYYY-MM-DD)format" })
         let userData = await userModel.findById(userId)
         if (!userData) return res.status(404).send({ status: false, message: "User not found" })
         if (req.decodedUserId != userId) return res.status(401).send({ status: false, message: "Your not authorised to create book" })
@@ -62,7 +62,7 @@ const getAllBooks = async function (req, res) {
         if (data.userId) {
             if (!isValidObjectId(data.userId)) return res.status(400).send({ status: false, message: "Pls enter valid userId" })
         }
-        let allBooks = await bookModel.find(data, { isDeleted: false }).select({ _id: 1, title: 1, excerpt: 1, userId: 1, category: 1, releasedAt: 1, reviews: 1 }).sort({ title: 1 })
+        let allBooks = await bookModel.find(data, { isDeleted: false })
         if (allBooks.length == 0) return res.status(404).send({ status: false, message: "Books not found" })
         else {
             return res.status(200).send({ status: true, message: "Books list", data: allBooks })
@@ -81,7 +81,7 @@ const getbooksBybookId = async function (req, res) {
         if (!isValidObjectId(data)) return res.status(400).send({ statu: false, message: "pls provide valid BookId" })
         let bookDetails = await bookModel.findById(data)
         if (!bookDetails) return res.status(404).send({ status: false, message: "book not found" })
-        let reviewDetails = await reviewModel.find({ bookId: bookDetails.id })
+        let reviewDetails = await reviewModel.find({ bookId: bookDetails.id }).select({bookId:1,reviewedBy:1,reviewedAt:1,rating:1,review:1})
         bookDetails._doc.reviewsData = reviewDetails
         return res.status(200).send({ status: true, message: "Book List", data: bookDetails })
 
@@ -107,7 +107,7 @@ const bookUpdated = async function (req, res) {
             if (typeof title !== "string" || title.trim().length === 0) {
                 return res.status(400).send({ status: false, msg: "Enter valid title" })
             };
-            keys.title = title
+            keys.title = title.trim()
             let dublicatTitle = await bookModel.findOne({ title });
             if (dublicatTitle) return res.status(400).send({ status: false, message: "this title is allredy present" })
         }
@@ -115,7 +115,7 @@ const bookUpdated = async function (req, res) {
             if (typeof excerpt !== "string" || excerpt.trim().length === 0) {
                 return res.status(400).send({ status: false, msg: "Enter valid excerpt" })
             };
-            keys.excerpt = excerpt
+            keys.excerpt = excerpt.trim()
             let dublicatExcert = await bookModel.findOne({ excerpt });
             if (dublicatExcert) return res.status(400).send({ status: false, message: "this excert is allredy present" })
         }
@@ -123,8 +123,8 @@ const bookUpdated = async function (req, res) {
             if (typeof releasedAt !== "string" || releasedAt.trim().length === 0) {
                 return res.status(400).send({ status: false, msg: "Enter valid releasedAt" })
             };
-            if (!validate.match(releasedAt)) return res.status(400).send({ status: false, message: "Pls enter valid date (YYYY-MM-DD)format" })
-            keys.releasedAt = releasedAt
+            if (!releasedAt.match(validDate)) return res.status(400).send({ status: false, message: "Pls enter valid date (YYYY-MM-DD)format" })
+            keys.releasedAt = releasedAt.trim()
             let dublicatReleasedAt = await bookModel.findOne({ releasedAt });
             if (dublicatReleasedAt) return res.status(400).send({ status: false, message: "this relesedAt is allredy present" })
         }
@@ -132,12 +132,12 @@ const bookUpdated = async function (req, res) {
             if (typeof ISBN !== "string" || ISBN.trim().length === 0) {
                 return res.status(400).send({ status: false, msg: "Enter valid ISBN" })
             };
-            keys.ISBN = ISBN
+            keys.ISBN = ISBN.trim()
             let dublicatISBN = await bookModel.findOne({ ISBN });
             if (dublicatISBN) return res.status(400).send({ status: false, message: "this ISBN is allredy present" })
         }
         let updatedata = await bookModel.findByIdAndUpdate(data, { $set: keys, updatedAt: Date.now() }, { new: true })
-        return res.status(200).send({ status: true, data: updatedata })
+        return res.status(200).send({ status: true,message:"Success", data: updatedata })
 
     }
     catch (error) {
