@@ -1,10 +1,10 @@
 const reviewModel=require('../models/reviewModel')
 const bookModel=require('../models/bookModel')
 const {isValidObjectId}=require('mongoose')
+const fullName = /^[A-Z][-a-zA-Z ]+$/
 
 /////////////////////////////////////////////~Review Create Api~//////////////////////////////////
 const createReview=async (req,res)=>{
-    console.log(req.params.bookId)
     const data=req.body
     data.bookId=req.params.bookId
     data.reviewedAt=new Date()
@@ -29,11 +29,12 @@ const updateReview = async function (req, res) {
     if (typeof reviewedBy !== "string" || reviewedBy.trim().length === 0) {
         return res.status(400).send({ status: false, msg: "Enter valid reviewed Name" })
     };
+    if(!reviewedBy.match(fullName)) return res.status(400).send({status: false, message:"Pls provide valid reviewedBy"})
     if (rating <= 0 || rating > 5) return res.status(400).send({ status: false, message: "rating min1, max5" })
     let update = await reviewModel.findByIdAndUpdate(reviewId, { reviewedBy, rating, review }, { new: true })
     let bookdata = await bookModel.findById(bookId)
     bookdata._doc.reviewsData = update
-    return res.send({ status: false, data: bookdata })
+    return res.status(200).send({ status: false, data: bookdata })
 
 
 }
