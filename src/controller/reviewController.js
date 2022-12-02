@@ -1,10 +1,10 @@
 const reviewModel=require('../models/reviewModel')
 const bookModel=require('../models/bookModel')
 const {isValidObjectId}=require('mongoose')
-const fullName = /^[A-Z][-a-zA-Z ]+$/
 
 /////////////////////////////////////////////~Review Create Api~//////////////////////////////////
 const createReview=async (req,res)=>{
+    
     const data=req.body
     data.bookId=req.params.bookId
     data.reviewedAt=new Date()
@@ -16,6 +16,7 @@ const createReview=async (req,res)=>{
 
 /////////////////////////////////////////////~Review Update Api~//////////////////////////////////
 const updateReview = async function (req, res) {
+
     let { bookId, reviewId } = req.params
     if (!isValidObjectId(bookId)) return res.status(400).send({ status: false, message: "Pls provide valid bookId" })
     if (!isValidObjectId(reviewId)) return res.status(400).send({ status: false, message: "Pls provide valid reviewId" })
@@ -24,17 +25,54 @@ const updateReview = async function (req, res) {
     let reviewDetails = await reviewModel.findById(reviewId)
     if (!reviewDetails || reviewDetails.isDeleted == true) return res.status(404).send({ status: false, message: "review not found" })
     if (bookId != reviewDetails.bookId) return res.status(400).send({ status: false, message: "bookId and review BookId not Match" })
+
+    if(Object.keys(req.body).length==0){
+        return res.status(400).send({status:false,message:"Request body cannot be empty"})
+    }
     let { reviewedBy, rating, review } = req.body
-    if (!reviewedBy && !rating && !review) return res.status(400).send({ status: false, message: "pls provide details in body" })
-    if (typeof reviewedBy !== "string" || reviewedBy.trim().length === 0) {
-        return res.status(400).send({ status: false, msg: "Enter valid reviewed Name" })
-    };
-    if(!reviewedBy.match(fullName)) return res.status(400).send({status: false, message:"Pls provide valid reviewedBy"})
-    if (rating <= 0 || rating > 5) return res.status(400).send({ status: false, message: "rating min1, max5" })
+    
+    //validations before updating a review======================================================
+    if(reviewedBy){
+          //reviewedBy validations
+if(req.body.reviewedBy){
+    if(typeof req.body.reviewedBy!="string"){
+        return res.status(400).send({status:false,message:"reviewedBy should be string"})
+    }
+    else{
+            const validate=req.body.reviewedBy.match(/^[A-Z][-a-zA-Z ]+$/)
+            if(!validate){
+                return res.status(400).send({status:false,message:"Invalid name of reviewer"})
+            }
+        }
+}
+//===============================================================================================
+    }
+
+    if(rating!=undefined){
+         //validations for ratings
+
+    if(req.body.rating==undefined){
+        return res.status(400).send({status:false,message:"Rating should be provided in request body"})
+    }
+    else{
+        const rating=req.body.rating
+    if(!(typeof rating=="number"&&(rating>=1&&rating<=5))){
+          return  res.status(400).send({status:false,message:"Rating shold be a number between 1 and 5"})
+        }
+    }
+    //==========================================================================================
+    }
+
+    if(review){
+        review=review.trim()
+    }
+//End of validations=============================================================================
+
+
     let update = await reviewModel.findByIdAndUpdate(reviewId, { reviewedBy, rating, review }, { new: true })
     let bookdata = await bookModel.findById(bookId)
     bookdata._doc.reviewsData = update
-    return res.status(200).send({ status: false, data: bookdata })
+    return res.send({ status: false, data: bookdata })
 
 
 }
@@ -56,7 +94,7 @@ const deleteReview = async function (req, res) {
         if(!reviewData) { return res.status(404).send({status:false, msg: "No review exists with this Id"})}
 
         if(reviewData.isDeleted==true) {return res.status(400).send({status:false, msg:"review not exist already deleted "})}
-
+ 
         if(reviewData.bookId!=bookId){
             return res.status(401).send({status:false,message:"Book Id does not match with the review"})
         }
