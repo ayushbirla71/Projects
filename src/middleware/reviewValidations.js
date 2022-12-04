@@ -53,6 +53,12 @@ if(req.body.reviewedBy){
         }
     }
     //==========================================================================================
+    if(req.body.reviewedAt){
+        if(!/^\d{4}-\d{2}-\d{2}$/gm.test(req.body.reviewedAt))return res.status(400).send({status:false,message:"Pls provide valid date (YYYY-MM-DD)"})
+    }
+    else{
+        req.body.reviewedAt=Date.now()
+    }
     req.body.review=req.body.review.trim()
     next()
 }

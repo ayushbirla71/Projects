@@ -10,21 +10,43 @@ const userCreate = async function (req, res) {
   try {
     let data = req.body
     if (Object.keys(data).length == 0) return res.status(400).send({ status: false, message: "Pls provide user details" })
-    let { title, name, phone, email, password } = data
+    let { title, name, phone, email, password, address } = data
     if (!title) return res.status(400).send({ status: false, message: "title is mandatory" })
+    if (typeof title !== "string" || title.trim().length === 0) {
+      return res.status(400).send({ status: false, msg: "Enter valid title" })
+    };
     if (title == "Mr" || title == "Mrs" || title == "Miss") {
       if (!name) return res.status(400).send({ status: false, message: "name is mandatory" })
-      if (!name.match(nameregex)) return res.status(400).send({ status: false, message: "Pls provide valid name" })
+      if (typeof name !== "string" || name.trim().length === 0 || !nameregex.test(name)) return res.status(400).send({ status: false, message: "Pls provide valid name" })
       if (!phone) return res.status(400).send({ status: false, message: "phone no is mandatory" })
-      if (!phone.match(mobileValidation)) return res.status(400).send({ status: false, message: "Pls privide valid Phone no" })
+      if (!mobileValidation.test(phone)) return res.status(400).send({ status: false, message: "Pls privide valid Phone no" })
       let dublicatPhone = await userModel.findOne({ phone })
       if (dublicatPhone) return res.status(400).send({ status: false, message: "Pls provide unique phone no" })
       if (!email) return res.status(400).send({ status: false, message: "email is mandatory" })
-      if (!email.match(emailValidation)) return res.status(400).send({ status: false, message: "Pls provide valid email" })
+      if (typeof email !== "string" || email.trim().length === 0 || !emailValidation.test(email)) return res.status(400).send({ status: false, message: "Pls provide valid email" })
       let dublicatEmail = await userModel.findOne({ email })
       if (dublicatEmail) return res.status(400).send({ status: false, message: "Pls provide unique Email" })
       if (!password) return res.status(400).send({ status: false, message: "password is mandatory" })
-      if (!password.match(passwordValidation)) return res.status(400).send({ status: false, message: "Pls privide Password minLen 8, maxLen 15" })
+      if (typeof password !== "string" || password.trim().length === 0 || !passwordValidation.test(password)) return res.status(400).send({ status: false, message: "Pls privide Password minLen 8, maxLen 15" })
+      if (address && typeof address != "object") {
+        return res.status(400).send({ status: false, message: "Address is in wrong format" })
+      }
+      if (address) {
+        if (typeof address.street !== "string" || address.street.trim().length === 0) {
+          return res.status(400).send({ status: false, message: "Street address cannot be empty" });
+        }
+        if (typeof address.city !== "string" || address.city.trim().length === 0) {
+          return res.status(400).send({ status: false, message: "City cannot be empty" });
+        }
+        if (typeof address.pincode !== "string" || address.pincode.trim().length === 0) {
+          return res.status(400).send({ status: false, message: "Pincode cannot be empty" });
+        }
+        let pincode = address.pincode;
+
+        if (!/^[1-9][0-9]{5}$/.test(pincode)) return res.status(400).send({ status: false, msg: " Please Enter Valid Pincode Of 6 Digits" });
+
+
+      }
       let createUser = await userModel.create(data)
       return res.status(201).send({ status: true, message: 'Success', data: createUser })
     }
@@ -42,7 +64,14 @@ const userLogin = async function (req, res) {
     if (Object.keys(data).length == 0) return res.status(400).send({ status: false, message: "Pls provide data" })
     let { email, password } = data
     if (!email) return res.status(400).send({ status: false, message: "Pls provide email" })
+    if (typeof email !== "string" || email.trim().length === 0) {
+      return res.status(400).send({ status: false, msg: "Enter valid email" })
+    };
+
     if (!password) return res.status(400).send({ status: false, message: "Pls provide password" })
+    if (typeof password !== "string" || password.trim().length === 0) {
+      return res.status(400).send({ status: false, msg: "Enter valid title" })
+    };
     let user = await userModel.findOne({ email, password })
     if (!user) return res.status(401).send({ status: false, message: "username or the password is not corerct" })
     console.log(user)

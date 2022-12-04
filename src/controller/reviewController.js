@@ -7,10 +7,9 @@ const createReview=async (req,res)=>{
     
     const data=req.body
     data.bookId=req.params.bookId
-    data.reviewedAt=new Date()
     const createdReview=await reviewModel.create(data)
    let data2=await bookModel.findByIdAndUpdate(data.bookId,{$inc:{reviews:1}},{new:true})
-   data2._doc.ReviewData=createdReview
+   data2._doc.reviewsData=createdReview
     res.status(201).send({status:true,message:"Review created",data:data2})
 }
 
@@ -72,7 +71,7 @@ if(req.body.reviewedBy){
     let update = await reviewModel.findByIdAndUpdate(reviewId, { reviewedBy, rating, review }, { new: true })
     let bookdata = await bookModel.findById(bookId)
     bookdata._doc.reviewsData = update
-    return res.send({ status: false, data: bookdata })
+    return res.send({ status: true,message:"Success ", data: bookdata })
 
 
 }

@@ -3,7 +3,7 @@ const userModel = require('../models/userModel')
 const reviewModel = require('../models/reviewModel')
 const validDate = /^\d{4}-\d{2}-\d{2}$/gm
 const validISBN = /^(?=(?:\D*\d){10}(?:(?:\D*\d){3})?$)[\d-]+$/
-const fullName = /^[A-Za-z][A-Za-z ,._]{5,50}$/
+const fullName = /^[A-Za-z][A-Za-z ,._?]{5,50}$/
 const { isValidObjectId } = require("mongoose")
 
 /////////////////////////////////////////////~Book Create Api~//////////////////////////////////
@@ -13,13 +13,13 @@ const bookCreate = async function (req, res) {
         if (Object.keys(data).length == 0) return res.status(400).send({ status: false, message: "pls provide book ditails in body" })
         let { title, excerpt, userId, ISBN, category, subcategory, releasedAt } = data
         if (!title) return res.status(400).send({ status: false, message: "Pls provide title" })
-        if (typeof title !== "string" || title.trim().length === 0) {
+        if (typeof title !== "string" || title.trim().length === 0||!fullName.test(title)) {
             return res.status(400).send({ status: false, msg: "Enter valid title" })
         };
         let dublicatTitle = await bookModel.findOne({ title })
         if (dublicatTitle) return res.status(400).send({ status: false, message: "pls provide unique title" })
         if (!excerpt) return res.status(400).send({ status: false, message: "Pls provide excerpt" })
-        if (typeof excerpt !== "string" || excerpt.trim().length === 0) {
+        if (typeof excerpt !== "string" || excerpt.trim().length === 0||!fullName.test(excerpt)) {
             return res.status(400).send({ status: false, msg: "Enter valid excerpt" })
         };
         if (!userId) return res.status(400).send({ status: false, message: "Pls provide userId" })
@@ -31,7 +31,7 @@ const bookCreate = async function (req, res) {
         if (typeof ISBN !== "string" || ISBN.trim().length === 0) {
             return res.status(400).send({ status: false, msg: "Enter valid ISBN" })
         };
-        if (!ISBN.match(validISBN)) return res.status(400).send({ status: false, message: "pls enter valid ISBN (10 or 13) digits in the input Only." })
+        if (!validISBN.test(ISBN)) return res.status(400).send({ status: false, message: "pls enter valid ISBN (10 or 13) digits in the input Only." })
         let dublicatISBN = await bookModel.findOne({ ISBN })
         if (dublicatISBN) return res.status(400).send({ status: false, message: "pls provide unique ISBN" })
         if (!category) return res.status(400).send({ status: false, message: "Pls provide category" })
@@ -46,7 +46,7 @@ const bookCreate = async function (req, res) {
         if (typeof releasedAt !== "string" || releasedAt.trim().length === 0) {
             return res.status(400).send({ status: false, msg: "Enter valid releasedAt" })
         };
-        if (!releasedAt.match(validDate)) return res.status(400).send({ status: false, message: "Pls enter valid date (YYYY-MM-DD)format" })
+        if (!validDate.test(releasedAt)) return res.status(400).send({ status: false, message: "Pls enter valid date (YYYY-MM-DD)format" })
         let userData = await userModel.findById(userId)
         if (!userData) return res.status(404).send({ status: false, message: "User not found" })
         if (req.decodedUserId != userId) return res.status(403).send({ status: false, message: "Your not authorised to create book" })
@@ -85,8 +85,8 @@ const getbooksBybookId = async function (req, res) {
         if (!data) return res.status(400).send({ status: false, message: "Pls provide bookId" })
         if (!isValidObjectId(data)) return res.status(400).send({ statu: false, message: "pls provide valid BookId" })
         let bookDetails = await bookModel.findById(data)
-        if (!bookDetails) return res.status(404).send({ status: false, message: "book not found" })
-        let reviewDetails = await reviewModel.find({ bookId: bookDetails.id }).select({ bookId: 1, reviewedBy: 1, reviewedAt: 1, rating: 1, review: 1 })
+        if (!bookDetails||bookDetails.isDeleted==true) return res.status(404).send({ status: false, message: "book not found" })
+        let reviewDetails = await reviewModel.find({ bookId: bookDetails.id,isDeleted:false }).select({ bookId: 1, reviewedBy: 1, reviewedAt: 1, rating: 1, review: 1 })
         bookDetails._doc.reviewsData = reviewDetails
         return res.status(200).send({ status: true, message: "Book List", data: bookDetails })
 
@@ -128,7 +128,7 @@ const bookUpdated = async function (req, res) {
             if (typeof releasedAt !== "string" || releasedAt.trim().length === 0) {
                 return res.status(400).send({ status: false, msg: "Enter valid releasedAt" })
             };
-            if (!releasedAt.match(validDate)) return res.status(400).send({ status: false, message: "Pls enter valid date (YYYY-MM-DD)format" })
+            if (!validDate.test(releasedAt)) return res.status(400).send({ status: false, message: "Pls enter valid date (YYYY-MM-DD)format" })
             keys.releasedAt = releasedAt.trim()
             let dublicatReleasedAt = await bookModel.findOne({ releasedAt });
             if (dublicatReleasedAt) return res.status(400).send({ status: false, message: "this relesedAt is allredy present" })
@@ -137,7 +137,7 @@ const bookUpdated = async function (req, res) {
             if (typeof ISBN !== "string" || ISBN.trim().length === 0) {
                 return res.status(400).send({ status: false, msg: "Enter valid ISBN" })
             };
-            if (!ISBN.match(validISBN)) return res.status(400).send({ status: false, message: "pls enter valid ISBN (10 or 13) digits in the input Only." })
+            if (!validISBN.test(validISBN)) return res.status(400).send({ status: false, message: "pls enter valid ISBN (10 or 13) digits in the input Only." })
             keys.ISBN = ISBN.trim()
             let dublicatISBN = await bookModel.findOne({ ISBN });
             if (dublicatISBN) return res.status(400).send({ status: false, message: "this ISBN is allredy present" })
