@@ -54,7 +54,7 @@ if(req.body.reviewedBy){
     }
     //==========================================================================================
     if(req.body.reviewedAt){
-        if(!/^\d{4}-\d{2}-\d{2}$/gm.test(req.body.reviewedAt))return res.status(400).send({status:false,message:"Pls provide valid date (YYYY-MM-DD)"})
+        if(!/^\d{4}\-(0[1-9]|1[012])\-(0[1-9]|[12][0-9]|3[01])$/.test(req.body.reviewedAt))return res.status(400).send({status:false,message:"Pls provide valid date (YYYY-MM-DD)"})
     }
     else{
         req.body.reviewedAt=Date.now()

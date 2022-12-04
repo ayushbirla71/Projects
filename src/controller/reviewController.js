@@ -4,18 +4,19 @@ const {isValidObjectId}=require('mongoose')
 
 /////////////////////////////////////////////~Review Create Api~//////////////////////////////////
 const createReview=async (req,res)=>{
-    
+    try{
     const data=req.body
     data.bookId=req.params.bookId
     const createdReview=await reviewModel.create(data)
    let data2=await bookModel.findByIdAndUpdate(data.bookId,{$inc:{reviews:1}},{new:true})
    data2._doc.reviewsData=createdReview
     res.status(201).send({status:true,message:"Review created",data:data2})
+}catch (error){res.status(500).send({status:false,message:error.message})}
 }
 
 /////////////////////////////////////////////~Review Update Api~//////////////////////////////////
 const updateReview = async function (req, res) {
-
+try{
     let { bookId, reviewId } = req.params
     if (!isValidObjectId(bookId)) return res.status(400).send({ status: false, message: "Pls provide valid bookId" })
     if (!isValidObjectId(reviewId)) return res.status(400).send({ status: false, message: "Pls provide valid reviewId" })
@@ -74,11 +75,14 @@ if(req.body.reviewedBy){
     return res.send({ status: true,message:"Success ", data: bookdata })
 
 
+}catch(error){
+    res.status(500).send({status:false,message:error.message})
+}
 }
 
 /////////////////////////////////////////////~Review Delete Api~//////////////////////////////////
 const deleteReview = async function (req, res) {
-    try {
+    try{
         let bookId = req.params.bookId
         let reviewId = req.params.reviewId
         if (!isValidObjectId(bookId)) { return res.status(400).send({ status: false, msg: "Pls provide a valid bookId" }) }
