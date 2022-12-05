@@ -35,10 +35,11 @@ if(req.body.reviewedBy){
         }
         else{
             let availableBooks=await bookModel.findById(req.params.bookId)
-            if(!availableBooks){
+            if(!availableBooks||availableBooks.isDeleted){
                return res.status(400).send({status:false,message:"No book with the given ID"})
             }
         }
+
     //=============================================================================================
 
     //validations for ratings

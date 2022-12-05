@@ -8,6 +8,8 @@ const passwordValidation = /^[a-zA-Z0-9]{8,15}$/
 /////////////////////////////////////////////~Create User Api~//////////////////////////////////
 const userCreate = async function (req, res) {
   try {
+    let token = req.headers["x-api-key"]
+    if (token) return res.status(400).send({ status: false, message: "another user token present in header" })
     let data = req.body
     if (Object.keys(data).length == 0) return res.status(400).send({ status: false, message: "Pls provide user details" })
     let { title, name, phone, email, password, address } = data

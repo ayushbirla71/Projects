@@ -67,7 +67,8 @@ const getAllBooks = async function (req, res) {
         if (data.userId) {
             if (!isValidObjectId(data.userId)) return res.status(400).send({ status: false, message: "Pls enter valid userId" })
         }
-        let allBooks = await bookModel.find(data, { isDeleted: false })
+        data.isDeleted=false
+        let allBooks = await bookModel.find(data).sort({title:1}).select({createdAt:0,updatedAt:0,__v:0,isDeleted:0})
         if (allBooks.length == 0) return res.status(404).send({ status: false, message: "Books not found" })
         else {
             return res.status(200).send({ status: true, message: "Books list", data: allBooks })
