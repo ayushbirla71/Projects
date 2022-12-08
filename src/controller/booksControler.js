@@ -2,25 +2,71 @@ const bookModel = require('../models/bookModel')
 const userModel = require('../models/userModel')
 const reviewModel = require('../models/reviewModel')
 // const validDate = /^\d{4}-\d{2}-\d{2}$/gm
-const validDate=/^\d{4}\-(0[1-9]|1[012])\-(0[1-9]|[12][0-9]|3[01])$/
+const validDate = /^\d{4}\-(0[1-9]|1[012])\-(0[1-9]|[12][0-9]|3[01])$/
 const validISBN = /^(?=(?:\D*\d){10}(?:(?:\D*\d){3})?$)[\d-]+$/
 const fullName = /^[A-Za-z][A-Za-z ,._?]{5,50}$/
 const { isValidObjectId } = require("mongoose")
+const aws = require('aws-sdk')
+
+//////////////////////////////////////////
+aws.config.update({
+    accessKeyId: "AKIAY3L35MCRZNIRGT6N",
+    secretAccessKey: "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",
+    region: "ap-south-1"
+})
+
+let uploadFile = async (file) => {
+    return new Promise(function (resolve, reject) {
+        // this function will upload file to aws and return the link
+        let s3 = new aws.S3({ apiVersion: '2006-03-01' }); // we will be using the s3 service of aws
+
+        var uploadParams = {
+            ACL: "public-read",
+            Bucket: "classroom-training-bucket",  //HERE
+            Key: "abc/" + file.originalname, //HERE 
+            Body: file.buffer
+        }
+
+
+        s3.upload(uploadParams, function (err, data) {
+            if (err) {
+                return reject({ "error": err })
+            }
+            return resolve(data.Location)
+        })
+
+        // let data= await s3.upload( uploadParams)
+        // if( data) return data.Location
+        // else return "there is an error"
+
+    })
+}
+const bookCreateImage = async function (req, res) {
+    try {
+        let files = req.files
+        let uplodedFileURL = await uploadFile(files[0])
+        let imageUrl = uplodedFileURL
+        return res.status(201).send({ status: true, message: "Image Url successfuly created", Url: imageUrl })
+    }
+    catch (error) {
+        return res.status(500).send({ status: false, message: error.message })
+    }
+}
 
 /////////////////////////////////////////////~Book Create Api~//////////////////////////////////
 const bookCreate = async function (req, res) {
     try {
         let data = req.body
         if (Object.keys(data).length == 0) return res.status(400).send({ status: false, message: "pls provide book ditails in body" })
-        let { title, excerpt, userId, ISBN, category, subcategory, releasedAt } = data
+        let { title, excerpt, userId, ISBN, category, subcategory, releasedAt, imageUrl } = data
         if (!title) return res.status(400).send({ status: false, message: "Pls provide title" })
-        if (typeof title !== "string" || title.trim().length === 0||!fullName.test(title)) {
+        if (typeof title !== "string" || title.trim().length === 0 || !fullName.test(title)) {
             return res.status(400).send({ status: false, msg: "Enter valid title" })
         };
         let dublicatTitle = await bookModel.findOne({ title })
         if (dublicatTitle) return res.status(400).send({ status: false, message: "pls provide unique title" })
         if (!excerpt) return res.status(400).send({ status: false, message: "Pls provide excerpt" })
-        if (typeof excerpt !== "string" || excerpt.trim().length === 0||!fullName.test(excerpt)) {
+        if (typeof excerpt !== "string" || excerpt.trim().length === 0 || !fullName.test(excerpt)) {
             return res.status(400).send({ status: false, msg: "Enter valid excerpt" })
         };
         if (!userId) return res.status(400).send({ status: false, message: "Pls provide userId" })
@@ -48,6 +94,10 @@ const bookCreate = async function (req, res) {
             return res.status(400).send({ status: false, msg: "Enter valid releasedAt" })
         };
         if (!validDate.test(releasedAt)) return res.status(400).send({ status: false, message: "Pls enter valid date (YYYY-MM-DD)format" })
+        if (!imageUrl) return res.status(400).send({ status: false, message: "Pls provide title" })
+        if (typeof imageUrl !== "string" || imageUrl.trim().length === 0) {
+            return res.status(400).send({ status: false, msg: "Enter valid book image url" })
+        };
         let userData = await userModel.findById(userId)
         if (!userData) return res.status(404).send({ status: false, message: "User not found" })
         if (req.decodedUserId != userId) return res.status(403).send({ status: false, message: "Your not authorised to create book" })
@@ -67,8 +117,8 @@ const getAllBooks = async function (req, res) {
         if (data.userId) {
             if (!isValidObjectId(data.userId)) return res.status(400).send({ status: false, message: "Pls enter valid userId" })
         }
-        data.isDeleted=false
-        let allBooks = await bookModel.find(data).sort({title:1}).select({createdAt:0,updatedAt:0,__v:0,isDeleted:0})
+        data.isDeleted = false
+        let allBooks = await bookModel.find(data).sort({ title: 1 }).select({ createdAt: 0, updatedAt: 0, __v: 0, isDeleted: 0 })
         if (allBooks.length == 0) return res.status(404).send({ status: false, message: "Books not found" })
         else {
             return res.status(200).send({ status: true, message: "Books list", data: allBooks })
@@ -87,8 +137,8 @@ const getbooksBybookId = async function (req, res) {
         if (!data) return res.status(400).send({ status: false, message: "Pls provide bookId" })
         if (!isValidObjectId(data)) return res.status(400).send({ statu: false, message: "pls provide valid BookId" })
         let bookDetails = await bookModel.findById(data)
-        if (!bookDetails||bookDetails.isDeleted==true) return res.status(404).send({ status: false, message: "book not found" })
-        let reviewDetails = await reviewModel.find({ bookId: bookDetails.id,isDeleted:false }).select({ bookId: 1, reviewedBy: 1, reviewedAt: 1, rating: 1, review: 1 })
+        if (!bookDetails || bookDetails.isDeleted == true) return res.status(404).send({ status: false, message: "book not found" })
+        let reviewDetails = await reviewModel.find({ bookId: bookDetails.id, isDeleted: false }).select({ bookId: 1, reviewedBy: 1, reviewedAt: 1, rating: 1, review: 1 })
         bookDetails._doc.reviewsData = reviewDetails
         return res.status(200).send({ status: true, message: "Book List", data: bookDetails })
 
@@ -174,4 +224,4 @@ const bookDelete = async function (req, res) {
     }
 }
 
-module.exports = { bookCreate, getAllBooks, getbooksBybookId, bookUpdated, bookDelete }
+module.exports = { bookCreate, getAllBooks, getbooksBybookId, bookUpdated, bookDelete ,bookCreateImage}

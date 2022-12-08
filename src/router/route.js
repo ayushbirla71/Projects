@@ -18,6 +18,7 @@ router.delete('/books/:bookId',middleware.Authentication,bookController.bookDele
 router.post("/books/:bookId/review",reviewValidator.reviewValidator,reviewControler.createReview)
 router.put("/books/:bookId/review/:reviewId",reviewControler.updateReview)
 router.delete("/books/:bookId/review/:reviewId",reviewControler.deleteReview)
+router.post('/bookCreateImage',bookController.bookCreateImage)
 
 
 router.all('/*',function(req,res){

@@ -1,9 +1,11 @@
 const express=require('express')
 const mongoose=require('mongoose')
 const route=require("./router/route")
+const multer= require('multer')
 const app=express()
 
 app.use(express.json())
+app.use(multer().any())
 
 mongoose.connect("mongodb+srv://ayush8120:GeGo5qhr7wM6VQyg@cluster0.n1nevi5.mongodb.net/group27Database?retryWrites=true&w=majority",{useNewUrlParser:true})
 .then(()=>{console.log("Project 03 Data Base is connected")})
