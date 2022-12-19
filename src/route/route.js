@@ -1,7 +1,7 @@
 const express = require('express')
 const router = express.Router()
 const link = require('../controllers/aws')
-const { createUser,userLogin } = require('../controllers/userController')
+const { createUser,userLogin,UpdateUser } = require('../controllers/userController')
 
 
 router.get("/test-me",function(req,res){
@@ -10,6 +10,7 @@ router.get("/test-me",function(req,res){
 
  router.post('/register', createUser)
 router.post('/login',userLogin)
+router.put('/user/:userId/profile',UpdateUser)
 
 //----------------------AWS-------------
 router.post('/write-file-aws',link.getImage)
