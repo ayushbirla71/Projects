@@ -1,5 +1,6 @@
 const userModel = require("../models/userModel")
 const bcrypt = require('bcrypt')
+const jwt = require('jsonwebtoken')
 const { isValidName, isValidEmail, isValidObjectId, isValidString, isValidPhone, isValidPassword, isValidPincode } = require('../validators/validations')
 const { getImage } = require("./aws")
 
@@ -100,4 +101,44 @@ const createUser = async function (req, res) {
     }
 }
 
-module.exports = { createUser }
+
+const userLogin = async (req, res) => {
+    try{
+    let { email, password } = req.body
+    if(!email||!password){return res.status(400).send({status:false,message:"Pls provide email & password"})}
+    let userDetails = await userModel.findOne({ email })
+    if(!userDetails){return res.status(404).send({status:false,message:"This email not exist"})}
+    let hash = userDetails.password
+    let finalPaswword =(result)=>{
+        if (result==true) {
+            let token = jwt.sign(
+                {
+                    userId: userDetails._id.toString(),
+                },
+                "project05", {
+    
+                expiresIn: '24h'
+            }
+            );
+            let userId = userDetails._id
+            res.setHeader("x-auth-token", token);
+            return res.status(200).send({ status: true, message: "User login successfull", data: { userId: userId, token: token } });
+        }
+        else {
+            return res.status(401).send({ status: false, message: "incorrect Password" })
+        }
+
+    }
+    await bcrypt.compare(password, hash, function (err, result) {
+       finalPaswword(result)
+    })
+  
+    }
+    catch(err){
+        return res.status(500).send({ status: false, message: err.message })
+    }
+}
+
+
+
+module.exports = { createUser,userLogin }
