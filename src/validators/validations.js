@@ -51,6 +51,13 @@ const isValidPincode = function (pincode) {
   if (/^[1-9]{1}[0-9]{2}\s{0,1}[0-9]{3}$/.test(pincode)) return true
   return false
 }
+
+const isValidBody=function(body){
+  if(Object.body.length!=0){
+    return true
+  }
+  else{return false}
+}
 //=============================// module exports //==============================
 
-module.exports = { isValidName, isValidEmail, isValidObjectId, isValidString,  isValidPhone, isValidPassword, isValidPincode }
+module.exports = { isValidName, isValidEmail, isValidObjectId, isValidString,  isValidPhone, isValidPassword, isValidPincode ,isValidBody}
