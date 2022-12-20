@@ -1,24 +1,25 @@
 const express = require('express')
 const router = express.Router()
 const link = require('../controllers/aws')
-const { createUser,userLogin,UpdateUser } = require('../controllers/userController')
-const {createProduct, getProductByQuery}=require('../controllers/productController')
+const { createUser,userLogin,UpdateUser, getUserProfile } = require('../controllers/userController')
+const {createProduct, getProductByQuery, getProductById}=require('../controllers/productController')
 
 
 router.get("/test-me",function(req,res){
     res.send("This is the test Api!!!!!!!!!!!!!!")
 })
 
+//-------------------- user ------------------//
  router.post('/register', createUser)
 router.post('/login',userLogin)
 router.put('/user/:userId/profile',UpdateUser)
+router.get('/user/:userId/profile', getUserProfile)
 
-//---------------------Product-------------//
+//------------------- Product ----------------//
 router.post('/products',createProduct)
 router.get('/products',getProductByQuery)
+router.get('/products/:productId',getProductById)
 
-//----------------------AWS-------------
-router.post('/write-file-aws',link.getImage)
 
 
 module.exports = router
