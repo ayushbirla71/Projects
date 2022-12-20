@@ -86,8 +86,10 @@ const getProductByQuery = async function(req,res){
                 obj.price = {$lt : priceLessThan}
             }
         }
+        obj.isDeleted = false
         let getProductByQuery = await productModel.find(obj)
         if(getProductByQuery.length==0)return res.status(404).send({status:false,message:"No product exists with given filter"})
+        get
         return res.status(200).send({status:true,message:"Success",data:getProductByQuery})
     } catch (error) {
         return res.status(500).send({status:false,message:error.message})
