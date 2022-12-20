@@ -44,19 +44,19 @@ const createUser = async function (req, res) {
             return res.status(400).send({ status: false, message: "Please provide Phone" })
         }
         if (!isValidPhone(phone)) {
-            return res.status(400).send({ status: false, message: "Please provide Phone" })
+            return res.status(400).send({ status: false, message: "Please provide valid Phone" })
         }
         if (!password) {
             return res.status(400).send({ status: false, message: "Please provide Password" })
         }
         if (!isValidPassword(password)) {
-            return res.status(400).send({ status: false, message: "Please provide Password" })
+            return res.status(400).send({ status: false, message: "Please provide valid Password" })
         }
         const salt = await bcrypt.genSalt(10)
         const secPass = await bcrypt.hash(password, salt)
         data.password = secPass
 
-        if (Object.keys(address).length == 0) {
+        if (!address) {
             return res.status(400).send({ status: false, message: "Please provide Address" })
         }
         let { shipping, billing } = address
@@ -152,8 +152,8 @@ const UpdateUser = async function(req,res){
             data.profileImage = await getImage(files)
         }
         let {email,phone,password,address} = data
-        if(email){if(!validemail.test(email))return res.status(400).send({status:false,message:"Pls provide a valid email"})}
-        if(phone){if(!validphone.test(phone))return res.status(400).send({status:false,message:"Pls provide a valid phone"})}
+        if(email){if(!isValidEmail(email))return res.status(400).send({status:false,message:"Pls provide a valid email"})}
+        if(phone){if(!isValidPhone(phone))return res.status(400).send({status:false,message:"Pls provide a valid phone"})}
         if(password){if(password.length<8 || password.length>15)return res.status(400).send({status:false,message:"Pls provide a password of length between 8 to 15"})}
         if(password){
             const salt = await bcrypt.genSalt(10)
@@ -183,7 +183,7 @@ const UpdateUser = async function(req,res){
             return res.status(400).send({status:false,message:"Pls provide a Unique phone"})
             }
         }
-        let UpdateUser = await userModel.findOneAndUpdate({_id:userId,isDeleted:false},
+        let UpdateUser = await userModel.findByIdAndUpdate({userId},
             {$set:data},{new:true})
             return res.status(200).send({status:true,message:"User profile updated",data:UpdateUser})
     } catch (error) {
