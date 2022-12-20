@@ -174,6 +174,30 @@ const userLogin = async (req, res) => {
     }
 }
 
+//==========================// get user details //========================================
+
+const getUserProfile = async function(req,res) {
+    try{
+         let userId = req.params.userId
+         // UserId Validation :-
+         if(!userId) {
+            return res.status(400).send({status:false,message:"Please provide userId"})
+         }
+         if(isValidObjectId(userId)) {
+            return res.status(400).send({status:false,message:"userId not valid"})
+         }
+         
+         const findUser = await userModel.findbyId(userId)
+         if(!findUser) {
+            return res.status(404).send({status:false,message:"User not found"})
+         }
+         res.status(200).send({status:true,message:"User profile details","data":findUser})
+    }
+    catch(err){
+res.status(500).send({status:false,message:err.message})
+    }
+}
+
 //==========================// update user //==============================================
 
 const UpdateUser = async function(req,res){
@@ -225,4 +249,4 @@ const UpdateUser = async function(req,res){
 }
 
 
-module.exports = { createUser, userLogin,UpdateUser }
+module.exports = { createUser, userLogin, getUserProfile, UpdateUser }
