@@ -7,11 +7,8 @@ const { getImage } = require("./aws")
 const createUser = async function (req, res) {
     try {
         let data = req.body
-        let { fname, lname, email, profileImage, phone, password, address } = data
+        let { fname, lname, email, phone, password, address } = data
         let files = req.files
-        data.address = JSON.parse(address)
-        address = JSON.parse(address)
-        console.log(data.address)
 
         if (!files) {
             return res.status(400).send({ status: false, message: "Please provide Profile Image" })
@@ -56,9 +53,11 @@ const createUser = async function (req, res) {
         const secPass = await bcrypt.hash(password, salt)
         data.password = secPass
 
-        if (Object.keys(address).length == 0) {
+        if (!address) {
             return res.status(400).send({ status: false, message: "Please provide Address" })
         }
+        address = JSON.parse(address)
+        data.address = address.trum()
         let { shipping, billing } = address
 
         if (!shipping) {
