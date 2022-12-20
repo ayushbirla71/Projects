@@ -8,14 +8,14 @@ const createProduct = async (req, res) => {
         let files = req.files
         let ProductData = req.body
         let {
-            title, description, isFreeShipping, price, currencyId, availableSizes, style, installments
+            title, description, isFreeShipping, price, currencyId, availableSizes, style, installments, currencyFormat
         } = ProductData
         if (!title || !isValidString(title)) {
             return res.status(400).send({ status: false, message: "Please provide title" })
         }
-        let duplicateTitle = await productModel.findOne({title})
-        if(duplicateTitle){
-            return res.status(400).send({status:false, msg: "Title is already exist"})
+        let duplicateTitle = await productModel.findOne({ title })
+        if (duplicateTitle) {
+            return res.status(400).send({ status: false, msg: "Title is already exist" })
         }
         if (!description || !isValidString(description)) {
             return res.status(400).send({ status: false, message: "Please provide description" })
@@ -30,20 +30,24 @@ const createProduct = async (req, res) => {
             return res.status(400).send({ status: false, message: "Please provide INR only" })
         }
         if (availableSizes) {
-            availableSizes = availableSizes.trim()
-            const arr = ["S", "XS", "M", "X", "L", "XXL", "XL"]
-            const values = availableSizes.split(" ")
-            console.log(values)
-
-            const multipleExist = values.every(value => {
-                return arr.includes(value);
+            let arr2 = ["S", "XS", "M", "X", "L", "XXL", "XL"]
+            let arr = availableSizes.trim().split(",")
+            const multipleExist = arr.every(value => {
+                return arr2.includes(value);
             });
 
             if (multipleExist == false) {
                 return res.status(400).send({ status: false, message: "pls provide valid size(S, XS, M, X, L, XXL, XL)" })
+
+            }
+            availableSizes = arr
+        }
+        if (currencyFormat) {
+            if (currencyFormat != '₹') {
+                return res.status(400).send({ status: false, Message: "Pls provide only ₹ " })
             }
         }
-
+        else { currencyFormat = '₹' }
         ProductData.currencyFormat = '₹'
         price = Number(price)
         ProductData.price = price.toFixed(2)
@@ -52,10 +56,11 @@ const createProduct = async (req, res) => {
         if (!files) {
             return res.status(400).send({ status: false, message: "Please provide Profile Image" })
         }
-        ProductData.productImage = await getImage(files)
+        let productImage = await getImage(files)
+        const data = { title, description, price, currencyId, currencyFormat, isFreeShipping, style, availableSizes, installments, productImage }
 
-        let finalProduct=await productModel.create(ProductData)
-        return res.status(201).send({status:false,data:finalProduct})
+        let finalProduct = await productModel.create(data)
+        return res.status(201).send({ status: false, data: finalProduct })
     }
     catch (err) {
         return res.status(500).send({ status: false, message: err.message })
