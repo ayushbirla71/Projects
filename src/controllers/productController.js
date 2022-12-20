@@ -3,6 +3,8 @@ const { getImage } = require("./aws")
 const jwt = require('jsonwebtoken')
 const { isValidName, isValidEmail, isValidObjectId, isValidString, isValidPhone, isValidPassword, isValidPincode, isValidBody } = require('../validators/validations')
 
+//===========================// create product //===========================================
+
 const createProduct = async (req, res) => {
     try {
         let files = req.files
@@ -67,6 +69,8 @@ const createProduct = async (req, res) => {
     }
 }
 
+//=========================// get product by query //=========================================
+
 const getProductByQuery = async function(req,res){
     try {
         let filters = req.query
@@ -98,4 +102,26 @@ const getProductByQuery = async function(req,res){
     }
 }
 
-module.exports={createProduct,getProductByQuery}
+//==============================// get by product id //=================================
+
+
+const getProductById = async function (req, res) {
+  try {
+    const productId = req.params.productId
+    if (!isValidObjectId(productId)) {
+      return res.status(400).send({ status: false, message: " Enter a valid productId" })
+    }
+    const productById = await productModel.findOne({ _id: productId, isDeleted: false })
+    
+        if (!productById) {
+          return res.status(404).send({status: false, message: "No product found by this Product id"});
+        }
+        return res.status(200).send({ status: true, message: "success", data: productById })
+      }
+       catch (err) {
+        return res.status(500).send({ status: false, error: err.message })
+      }
+    }
+  
+
+module.exports={createProduct, getProductByQuery, getProductById}
