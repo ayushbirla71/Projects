@@ -2,7 +2,7 @@ const express = require('express')
 const router = express.Router()
 const link = require('../controllers/aws')
 const { createUser,userLogin,UpdateUser } = require('../controllers/userController')
-const {createProduct}=require('../controllers/productController')
+const {createProduct, getProductByQuery}=require('../controllers/productController')
 
 
 router.get("/test-me",function(req,res){
@@ -15,6 +15,7 @@ router.put('/user/:userId/profile',UpdateUser)
 
 //---------------------Product-------------//
 router.post('/products',createProduct)
+router.get('/products',getProductByQuery)
 
 //----------------------AWS-------------
 router.post('/write-file-aws',link.getImage)
