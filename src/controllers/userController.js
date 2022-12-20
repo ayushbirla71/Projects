@@ -4,14 +4,13 @@ const jwt = require('jsonwebtoken')
 const { isValidName, isValidEmail, isValidObjectId, isValidString, isValidPhone, isValidPassword, isValidPincode } = require('../validators/validations')
 const { getImage } = require("./aws")
 
+//================================// create user //====================================
+
 const createUser = async function (req, res) {
     try {
         let data = req.body
-        let { fname, lname, email, profileImage, phone, password, address } = data
+        let { fname, lname, email, phone, password, address } = data
         let files = req.files
-        data.address = JSON.parse(address)
-        address = JSON.parse(address)
-        console.log(data.address)
 
         if (!files) {
             return res.status(400).send({ status: false, message: "Please provide Profile Image" })
@@ -39,13 +38,24 @@ const createUser = async function (req, res) {
         if (!isValidEmail(email)) {
             return res.status(400).send({ status: false, message: "Please provide valid Email Id" })
         }
-
+        
+        let emailExist = await userModel.findOne({email:email})
+        if(emailExist){
+            return res.status(400).send({status:false, msg: "Email ID already exist"})
+        }
+        
         if (!phone) {
             return res.status(400).send({ status: false, message: "Please provide Phone" })
         }
         if (!isValidPhone(phone)) {
-            return res.status(400).send({ status: false, message: "Please provide valid Phone" })
+            return res.status(400).send({ status: false, message: "Please provide valid Phone Number" })
         }
+       
+        let phoneExist = await userModel.findOne({phone:phone})
+        if(phoneExist){
+            return res.status(400).send({status:false, msg: "Phone number already exist"})
+        }
+
         if (!password) {
             return res.status(400).send({ status: false, message: "Please provide Password" })
         }
@@ -59,36 +69,56 @@ const createUser = async function (req, res) {
         if (!address) {
             return res.status(400).send({ status: false, message: "Please provide Address" })
         }
+        data.address = JSON.parse(address)
+        address = JSON.parse(address)
+
         let { shipping, billing } = address
 
         if (!shipping) {
             return res.status(400).send({ status: false, message: "Please provide Shipping Address" })
         }
+        if(typeof shipping != "object")return res.status(400).send({status:false,message:"Shipping must be an Object-type"})
         if (shipping) {
             let { street, city, pincode } = shipping
             if (!street) {
                 return res.status(400).send({ status: false, message: "Please provide Street" })
             }
+            if (!isValidString(street)) {
+                return res.status(400).send({ status: false, message: "Please provide valid Street Name" })
+            }
             if (!city) {
                 return res.status(400).send({ status: false, message: "Please provide City" })
+            }
+            if (!isValidName(city)) {
+                return res.status(400).send({ status: false, message: "Please provide valid City Name" })
             }
             if (!pincode) {
                 return res.status(400).send({ status: false, message: "Please provide Pincode" })
             }
+            if (!isValidPincode(pincode)) {
+                return res.status(400).send({ status: false, message: "Please provide valid Pincode" })
+            }
         }
-        if (!billing) {
-            return res.status(400).send({ status: false, message: "Please provide Billing Address" })
-        }
+        if(typeof billing != "object")return res.status(400).send({status:false,message:"Billing must be an Object-type"})
         if (billing) {
             let { street, city, pincode } = billing
             if (!street) {
                 return res.status(400).send({ status: false, message: "Please provide Street" })
             }
+            if (!isValidString(street)) {
+                return res.status(400).send({ status: false, message: "Please provide valid Street Name" })
+            }
             if (!city) {
                 return res.status(400).send({ status: false, message: "Please provide City" })
             }
+            if (!isValidName(city)) {
+                return res.status(400).send({ status: false, message: "Please provide valid City Name" })
+            }
             if (!pincode) {
                 return res.status(400).send({ status: false, message: "Please provide Pincode" })
+            }
+            if (!isValidPincode(pincode)) {
+                return res.status(400).send({ status: false, message: "Please provide valid Pincode" })
             }
         }
 
@@ -102,6 +132,7 @@ const createUser = async function (req, res) {
     }
 }
 
+//===============================// login user //===============================================
 
 const userLogin = async (req, res) => {
     try {
@@ -142,6 +173,8 @@ const userLogin = async (req, res) => {
         return res.status(500).send({ status: false, message: err.message })
     }
 }
+
+//==========================// update user //==============================================
 
 const UpdateUser = async function(req,res){
     try {
