@@ -74,7 +74,7 @@ const createProduct = async (req, res) => {
 const getProductByQuery = async function(req,res){
     try {
         let filters = req.query
-        let {size,name,priceGreaterThan,priceLessThan}=filters
+        let {size,name,priceGreaterThan,priceLessThan,priceSort}=filters
         let obj={}
         if(size){
             if(!["S", "XS", "M", "X", "L", "XXL", "XL"].includes(size)){
@@ -94,7 +94,15 @@ const getProductByQuery = async function(req,res){
                 obj.price = {$lt : priceLessThan}
             }
         }
-        let getProductByQuery = await productModel.find(obj)
+        obj.isDeleted = false
+        let getProductByQuery 
+        if(priceSort){
+                if(!["1","-1"].includes(priceSort))return res.status(400).send({status:false,message:"priceSort must only be (1,-1)"})
+                getProductByQuery = await productModel.find(obj).sort({price:priceSort})
+            }
+        else{
+            getProductByQuery = await productModel.find(obj)
+        }
         if(getProductByQuery.length==0)return res.status(404).send({status:false,message:"No product exists with given filter"})
         return res.status(200).send({status:true,message:"Success",data:getProductByQuery})
     } catch (error) {
@@ -123,6 +131,19 @@ const getProductById = async function (req, res) {
       }
     }
 
+const deleteProductById = async function(req,res){
+    try {
+        let productId = req.params.productId
+        if(!isValidObjectId(productId))return res.status(400).send({status:false,message:"Pls provide a valid Product Id"})
+        let checkProduct = await productModel.findOne({_id:productId,isDeleted:false})
+        if(!checkProduct)return res.status(404).send({status:false,message:"No Product exists with this ProductId"})
+        let deleteProductById = await productModel.findByIdAndUpdate(productId,
+            {$set:{isDeleted:true,deletedAt:new Date()}},{new:true})
+        return res.status(200).send({status:false,message:"Success",data:deleteProductById})
+    } catch (error) {
+        return res.status(500).send({ status: false, error: error.message })
+    }
+}
     
 const updateProduct = async (req, res) => {
     try {
@@ -207,4 +228,4 @@ const updateProduct = async (req, res) => {
 }
   
 
-module.exports={createProduct, getProductByQuery, getProductById,updateProduct}
+module.exports={createProduct, getProductByQuery, getProductById,deleteProductById,updateProduct}

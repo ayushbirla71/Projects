@@ -2,7 +2,7 @@ const express = require('express')
 const router = express.Router()
 const link = require('../controllers/aws')
 const { createUser,userLogin,UpdateUser, getUserProfile } = require('../controllers/userController')
-const {createProduct, getProductByQuery, getProductById, updateProduct}=require('../controllers/productController')
+const {createProduct, getProductByQuery, getProductById, deleteProductById, updateProduct}=require('../controllers/productController')
 
 
 router.get("/test-me",function(req,res){
@@ -19,6 +19,7 @@ router.get('/user/:userId/profile', getUserProfile)
 router.post('/products',createProduct)
 router.get('/products',getProductByQuery)
 router.get('/products/:productId',getProductById)
+router.delete('/products/:productId',deleteProductById)
 router.put('/products/:productId',updateProduct)
 
 
