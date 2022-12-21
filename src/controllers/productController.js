@@ -62,7 +62,7 @@ const createProduct = async (req, res) => {
         const data = { title, description, price, currencyId, currencyFormat, isFreeShipping, style, availableSizes, installments, productImage }
 
         let finalProduct = await productModel.create(data)
-        return res.status(201).send({ status: true ,message: 'Success', data: finalProduct })
+        return res.status(201).send({ status: true, message: 'Success', data: finalProduct })
     }
     catch (err) {
         return res.status(500).send({ status: false, message: err.message })
@@ -71,42 +71,45 @@ const createProduct = async (req, res) => {
 
 //=========================// get product by query //=========================================
 
-const getProductByQuery = async function(req,res){
+const getProductByQuery = async function (req, res) {
     try {
         let filters = req.query
-        let {size,name,priceGreaterThan,priceLessThan,priceSort}=filters
-        let obj={}
-        if(size){
-            if(!["S", "XS", "M", "X", "L", "XXL", "XL"].includes(size)){
-                return res.status(400).send({status:false,message:"Size must be from this - [ S , XS , M , X , L , XXL , XL ]"})
+        let { size, name, priceGreaterThan, priceLessThan, priceSort } = filters
+        let obj = {}
+        if (size) {
+            size = size.toUpperCase().split(",")
+            for (i = 0; i < size.length; i++) {
+                if (!["S", "XS", "M", "X", "L", "XXL", "XL"].includes(size[i])) {
+                    return res.status(400).send({ status: false, message: "Size must be from this - [ S , XS , M , X , L , XXL , XL ]" })
+                }
             }
-           obj.availableSizes=size 
+            obj.availableSizes = { $in: size }
         }
-        if(name){
-            obj.title=name
+        if (name) {
+            obj.title = { $regex: name }
         }
-        if(priceGreaterThan || priceLessThan){
-            if(priceGreaterThan&&priceLessThan){
-                obj.price = {$lt : priceLessThan , $gt : priceGreaterThan}
-            }else if(priceGreaterThan){
-                obj.price = {$gt : priceGreaterThan}
-            }else if(priceLessThan){
-                obj.price = {$lt : priceLessThan}
+        if (priceGreaterThan || priceLessThan) {
+            if (priceGreaterThan && priceLessThan) {
+                obj.price = { $lt: priceLessThan, $gt: priceGreaterThan }
+            } else if (priceGreaterThan) {
+                obj.price = { $gt: priceGreaterThan }
+            } else if (priceLessThan) {
+                obj.price = { $lt: priceLessThan }
             }
         }
         obj.isDeleted = false
-        let getProductByQuery 
-        if(priceSort){
-                if(!["1","-1"].includes(priceSort))return res.status(400).send({status:false,message:"priceSort must only be (1,-1)"})
-                getProductByQuery = await productModel.find(obj).sort({price:priceSort})
-            }
-        else{
-            getProductByQuery = await productModel.find(obj)
+        let getProductByQuery
+        let demo = {}
+        if (priceSort) {
+            demo.price = priceSort
+            if (!["1", "-1"].includes(priceSort)) return res.status(400).send({ status: false, message: "priceSort must only be (1,-1)" })
         }
-        if(getProductByQuery.length==0)return res.status(404).send({status:false,message:"No product exists with given filter"})
-        return res.status(200).send({status:true,message:"Success",data:getProductByQuery})
+        getProductByQuery = await productModel.find(obj).sort(demo)
+
+        if (getProductByQuery.length == 0) return res.status(404).send({ status: false, message: "No product exists with given filter" })
+        return res.status(200).send({ status: true, message: "Success", data: getProductByQuery })
     } catch (error) {
-        return res.status(500).send({status:false,message:error.message})
+        return res.status(500).send({ status: false, message: error.message })
     }
 }
 
@@ -114,46 +117,46 @@ const getProductByQuery = async function(req,res){
 
 
 const getProductById = async function (req, res) {
-  try {
-    const productId = req.params.productId
-    if (!isValidObjectId(productId)) {
-      return res.status(400).send({ status: false, message: " Enter a valid productId" })
-    }
-    const productById = await productModel.findOne({ _id: productId, isDeleted: false })
-    
+    try {
+        const productId = req.params.productId
+        if (!isValidObjectId(productId)) {
+            return res.status(400).send({ status: false, message: " Enter a valid productId" })
+        }
+        const productById = await productModel.findOne({ _id: productId, isDeleted: false })
+
         if (!productById) {
-          return res.status(404).send({status: false, message: "No product found by this Product id"});
+            return res.status(404).send({ status: false, message: "No product found by this Product id" });
         }
         return res.status(200).send({ status: true, message: "success", data: productById })
-      }
-       catch (err) {
-        return res.status(500).send({ status: false, error: err.message })
-      }
     }
+    catch (err) {
+        return res.status(500).send({ status: false, error: err.message })
+    }
+}
 
-const deleteProductById = async function(req,res){
+const deleteProductById = async function (req, res) {
     try {
         let productId = req.params.productId
-        if(!isValidObjectId(productId))return res.status(400).send({status:false,message:"Pls provide a valid Product Id"})
-        let checkProduct = await productModel.findOne({_id:productId,isDeleted:false})
-        if(!checkProduct)return res.status(404).send({status:false,message:"No Product exists with this ProductId"})
+        if (!isValidObjectId(productId)) return res.status(400).send({ status: false, message: "Pls provide a valid Product Id" })
+        let checkProduct = await productModel.findOne({ _id: productId, isDeleted: false })
+        if (!checkProduct) return res.status(404).send({ status: false, message: "No Product exists with this ProductId" })
         let deleteProductById = await productModel.findByIdAndUpdate(productId,
-            {$set:{isDeleted:true,deletedAt:new Date()}},{new:true})
-        return res.status(200).send({status:false,message:"Success",data:deleteProductById})
+            { $set: { isDeleted: true, deletedAt: new Date() } }, { new: true })
+        return res.status(200).send({ status: false, message: "Success", data: deleteProductById })
     } catch (error) {
         return res.status(500).send({ status: false, error: error.message })
     }
 }
-    
+
 const updateProduct = async (req, res) => {
     try {
-        let productId= req.params.productId
-        let image=req.files
+        let productId = req.params.productId
+        let image = req.files
         let ProductData = req.body
-        if(Object.keys(ProductData).length==0){return res.status(400).send({status:false,Message:""})}
+        if (Object.keys(ProductData).length == 0) { return res.status(400).send({ status: false, Message: "" }) }
         if (!isValidObjectId(productId)) {
             return res.status(400).send({ status: false, message: " Enter a valid productId" })
-          }
+        }
         let {
             title, description, isFreeShipping, price, currencyId, availableSizes, style, installments, currencyFormat
         } = ProductData
@@ -167,25 +170,25 @@ const updateProduct = async (req, res) => {
                 return res.status(400).send({ status: false, msg: "Title is already exist" })
 
             }
-            obj.title=title
+            obj.title = title
 
         }
         if (description) {
             if (!isValidString(description)) {
                 return res.status(400).send({ status: false, message: "Please provide description" })
             }
-            obj.description=description
+            obj.description = description
         }
         if (isFreeShipping) {
-            if(typeof(isFreeShipping)!="boolean"){
-                return res.status(400).send({status:false,message:"Pls provide only boolean value in isFreeShipping"})
+            if (typeof (isFreeShipping) != "boolean") {
+                return res.status(400).send({ status: false, message: "Pls provide only boolean value in isFreeShipping" })
             }
-            obj.isFreeShipping=isFreeShipping
+            obj.isFreeShipping = isFreeShipping
 
         }
         if (price) {
             price = Number(price)
-            obj.price=price.toFixed(2)
+            obj.price = price.toFixed(2)
 
         }
         if (availableSizes) {
@@ -199,33 +202,33 @@ const updateProduct = async (req, res) => {
                 return res.status(400).send({ status: false, message: "pls provide valid size(S, XS, M, X, L, XXL, XL)" })
 
             }
-            obj.availableSizes= arr
+            obj.availableSizes = arr
         }
         if (style) {
             if (!isValidString(style)) {
                 return res.status(400).send({ status: false, message: "Please provide valid style" })
             }
-            obj.style=style
+            obj.style = style
         }
         if (installments) {
-            obj.installments=installments
+            obj.installments = installments
 
         }
         const productById = await productModel.findById(productId)
-    
-        if (!productById||productById.isDeleted==true) {
-          return res.status(404).send({status: false, message: "No product found by this Product id"});
+
+        if (!productById || productById.isDeleted == true) {
+            return res.status(404).send({ status: false, message: "No product found by this Product id" });
         }
-        if(image){
+        if (image) {
             obj.productImage = await getImage(image)
         }
-        let updatedData= await productModel.findByIdAndUpdate(productId,{$set:obj},{new:true})
-        return res.status(200).send({status:true,message:"Update sccessuly",data:updatedData})
+        let updatedData = await productModel.findByIdAndUpdate(productId, { $set: obj }, { new: true })
+        return res.status(200).send({ status: true, message: "Update sccessuly", data: updatedData })
     }
     catch (err) {
         return res.status(500).send({ status: false, error: err.message })
     }
 }
-  
 
-module.exports={createProduct, getProductByQuery, getProductById,deleteProductById,updateProduct}
+
+module.exports = { createProduct, getProductByQuery, getProductById, deleteProductById, updateProduct }
