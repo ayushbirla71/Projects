@@ -183,11 +183,11 @@ const getUserProfile = async function(req,res) {
          if(!userId) {
             return res.status(400).send({status:false,message:"Please provide userId"})
          }
-         if(isValidObjectId(userId)) {
+         if(!isValidObjectId(userId)) {
             return res.status(400).send({status:false,message:"userId not valid"})
          }
          
-         const findUser = await userModel.findbyId(userId)
+         const findUser = await userModel.findById(userId)
          if(!findUser) {
             return res.status(404).send({status:false,message:"User not found"})
          }
