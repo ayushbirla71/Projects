@@ -62,7 +62,7 @@ const createProduct = async (req, res) => {
         const data = { title, description, price, currencyId, currencyFormat, isFreeShipping, style, availableSizes, installments, productImage }
 
         let finalProduct = await productModel.create(data)
-        return res.status(201).send({ status: false, data: finalProduct })
+        return res.status(201).send({ status: true ,message: 'Success', data: finalProduct })
     }
     catch (err) {
         return res.status(500).send({ status: false, message: err.message })
@@ -122,6 +122,89 @@ const getProductById = async function (req, res) {
         return res.status(500).send({ status: false, error: err.message })
       }
     }
+
+    
+const updateProduct = async (req, res) => {
+    try {
+        let productId= req.params.productId
+        let image=req.files
+        let ProductData = req.body
+        if(Object.keys(ProductData).length==0){return res.status(400).send({status:false,Message:""})}
+        if (!isValidObjectId(productId)) {
+            return res.status(400).send({ status: false, message: " Enter a valid productId" })
+          }
+        let {
+            title, description, isFreeShipping, price, currencyId, availableSizes, style, installments, currencyFormat
+        } = ProductData
+        let obj = {}
+        if (title) {
+            if (!isValidString(title)) {
+                return res.status(400).send({ status: false, message: "Please provide valid title" })
+            }
+            let duplicateTitle = await productModel.findOne({ title })
+            if (duplicateTitle) {
+                return res.status(400).send({ status: false, msg: "Title is already exist" })
+
+            }
+            obj.title=title
+
+        }
+        if (description) {
+            if (!isValidString(description)) {
+                return res.status(400).send({ status: false, message: "Please provide description" })
+            }
+            obj.description=description
+        }
+        if (isFreeShipping) {
+            if(typeof(isFreeShipping)!="boolean"){
+                return res.status(400).send({status:false,message:"Pls provide only boolean value in isFreeShipping"})
+            }
+            obj.isFreeShipping=isFreeShipping
+
+        }
+        if (price) {
+            price = Number(price)
+            obj.price=price.toFixed(2)
+
+        }
+        if (availableSizes) {
+            let arr2 = ["S", "XS", "M", "X", "L", "XXL", "XL"]
+            let arr = availableSizes.trim().split(",")
+            const multipleExist = arr.every(value => {
+                return arr2.includes(value);
+            });
+
+            if (multipleExist == false) {
+                return res.status(400).send({ status: false, message: "pls provide valid size(S, XS, M, X, L, XXL, XL)" })
+
+            }
+            obj.availableSizes= arr
+        }
+        if (style) {
+            if (!isValidString(style)) {
+                return res.status(400).send({ status: false, message: "Please provide valid style" })
+            }
+            obj.style=style
+        }
+        if (installments) {
+            obj.installments=installments
+
+        }
+        const productById = await productModel.findById(productId)
+    
+        if (!productById||productById.isDeleted==true) {
+          return res.status(404).send({status: false, message: "No product found by this Product id"});
+        }
+        if(image){
+            obj.productImage = await getImage(image)
+        }
+        let updatedData= await productModel.findByIdAndUpdate(productId,{$set:obj},{new:true})
+        return res.status(200).send({status:true,message:"Update sccessuly",data:updatedData})
+    }
+    catch (err) {
+        return res.status(500).send({ status: false, error: err.message })
+    }
+}
   
 
-module.exports={createProduct, getProductByQuery, getProductById}
+module.exports={createProduct, getProductByQuery, getProductById,updateProduct}
