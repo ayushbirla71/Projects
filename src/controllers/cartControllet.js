@@ -5,17 +5,16 @@ const createCart = async (req, res) => {
     try {
         let userId = req.params.userId
         let { cartId, productId } = req.body
-        console.log(typeof(productId))
         let { price } = await productModel.findById(productId)
         let Obj = {}
         let CreateCart
         if (!cartId) {
             Obj = { userId, totalPrice: price, totalItems: 1 }
-            Obj.items = { productId: productId, quantity: 1 }
+            Obj.items = { productId, quantity: 1 }
             CreateCart = await cartModel.create(Obj)
         }
         else {
-            let cartData = await cartModel.findById(cartId).select({ price: 1, items: 1, totalItems: 1, totalPrice: 1 })
+            let cartData = await cartModel.findById(cartId).select({ items: 1, totalItems: 1, totalPrice: 1 })
             let xyz = cartData.items
             let ab=true
             for (let i = 0; i < xyz.length; i++) {

@@ -205,7 +205,7 @@ const UpdateUser = async function(req,res){
         let userId = req.params.userId
         let data = req.body
         let files = req.files
-        if(files){
+        if(files.length!=0){
             data.profileImage = await getImage(files)
         }
         let {email,phone,password,address} = data
@@ -240,7 +240,7 @@ const UpdateUser = async function(req,res){
             return res.status(400).send({status:false,message:"Pls provide a Unique phone"})
             }
         }
-        let UpdateUser = await userModel.findByIdAndUpdate({userId},
+        let UpdateUser = await userModel.findByIdAndUpdate(userId,
             {$set:data},{new:true})
             return res.status(200).send({status:true,message:"User profile updated",data:UpdateUser})
     } catch (error) {
