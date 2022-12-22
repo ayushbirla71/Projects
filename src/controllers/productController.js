@@ -142,7 +142,7 @@ const deleteProductById = async function (req, res) {
         if (!checkProduct) return res.status(404).send({ status: false, message: "No Product exists with this ProductId" })
         let deleteProductById = await productModel.findByIdAndUpdate(productId,
             { $set: { isDeleted: true, deletedAt: new Date() } }, { new: true })
-        return res.status(200).send({ status: false, message: "Success", data: deleteProductById })
+        return res.status(200).send({ status: true, message: "Success", data: deleteProductById })
     } catch (error) {
         return res.status(500).send({ status: false, error: error.message })
     }
@@ -180,6 +180,7 @@ const updateProduct = async (req, res) => {
             obj.description = description
         }
         if (isFreeShipping) {
+            isFreeShipping=JSON.parse(isFreeShipping)
             if (typeof (isFreeShipping) != "boolean") {
                 return res.status(400).send({ status: false, message: "Pls provide only boolean value in isFreeShipping" })
             }
