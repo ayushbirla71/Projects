@@ -3,6 +3,7 @@ const productModel = require('../models/productModel')
 const userModel = require('../models/userModel')
 const { isValidObjectId } = require('../validators/validations')
 
+//========================================== CREATE CART ===============================================//
 const createCart = async (req, res) => {
     try {
         let userId = req.params.userId
@@ -56,4 +57,60 @@ const createCart = async (req, res) => {
 
     }
 }
-module.exports = { createCart }
+
+//============================================== UPDATE CART ===========================================//
+const updateCart = async function(req,res){
+    try{
+        let userId = req.params.userId
+        let data = req.body
+        
+        if(!isValidObjectId(userId))return res.status(400).send({status:false,message:"Pls provide a valid userId"})
+        let checkUser = await userModel.findById(userId)
+        if(!checkUser)return res.status(404).send({ status: false, message:"No User exists with this given UserId"})
+        
+        let {cartId,productId,removeProduct}=data
+        if(!cartId)return res.status(400).send({ status: false, message:"Pls provide cartId"})
+        if(!isValidObjectId(cartId))return res.status(400).send({status:false,message:"Pls provide a valid cartId"})
+        let checkCart = await cartModel.findById(cartId)
+        if(!checkCart)return res.status(404).send({ status: false, message:"No cart exists with this given cartId"})
+        
+        if(!productId)return res.status(400).send({ status: false, message:"Pls provide productId"})
+        if(!isValidObjectId(productId))return res.status(400).send({status:false,message:"Pls provide a valid productId"})
+        let checkProduct = await productModel.findOne({_id:productId,isDeleted:false})
+        if(!checkProduct)return res.status(404).send({ status: false, message:"No product exists with the given productId"})
+        
+        if(!removeProduct && removeProduct!=0)return res.status(400).send({ status: false, message:"Pls provide removeProduct Key in Body"})
+        if(![0,1].includes(removeProduct))return res.status(400).send({ status: false, message:"Pls provide removeProudct only - ( 0 , 1 )"})
+        let itemsarray = checkCart.items
+        if(removeProduct==0){
+            for (let i = 0; i < itemsarray.length; i++) {
+                let ele = itemsarray[i]
+                if (ele.productId == productId) {
+                    let totalQuantity=ele.quantity
+                    itemsarray.splice(i,1)
+                    checkCart.totalPrice = checkCart.totalPrice - totalQuantity*checkProduct.price
+                }
+            }
+        }else{
+            for (let i = 0; i < itemsarray.length; i++) {
+                let ele = itemsarray[i]
+                if (ele.productId == productId) {
+                    let totalQuantity=ele.quantity
+                    if(totalQuantity-1==0){
+                        itemsarray.splice(i,1)
+                    }else{checkCart.items[i].quantity = totalQuantity-1}  
+                    checkCart.totalPrice = checkCart.totalPrice - checkProduct.price
+                }
+            }
+        }
+        checkCart.totalItems = itemsarray.length
+        checkCart.items = itemsarray
+        let updateCart = await cartModel.findByIdAndUpdate(cartId,checkCart,{new:true})
+        return res.status(200).send({status:true,message:"Success",data:updateCart})
+
+    } catch (error) {
+        return res.status(500).send({ status: false, message: error.message })
+    }
+} 
+
+module.exports = { createCart,updateCart}

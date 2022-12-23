@@ -113,7 +113,7 @@ const getProductByQuery = async function (req, res) {
     }
 }
 
-//==============================// get by product id //=================================
+//==============================// get product by product id //=================================
 
 
 const getProductById = async function (req, res) {
@@ -134,20 +134,7 @@ const getProductById = async function (req, res) {
     }
 }
 
-const deleteProductById = async function (req, res) {
-    try {
-        let productId = req.params.productId
-        if (!isValidObjectId(productId)) return res.status(400).send({ status: false, message: "Pls provide a valid Product Id" })
-        let checkProduct = await productModel.findOne({ _id: productId, isDeleted: false })
-        if (!checkProduct) return res.status(404).send({ status: false, message: "No Product exists with this ProductId" })
-        let deleteProductById = await productModel.findByIdAndUpdate(productId,
-            { $set: { isDeleted: true, deletedAt: new Date() } }, { new: true })
-        return res.status(200).send({ status: true, message: "Success", data: deleteProductById })
-    } catch (error) {
-        return res.status(500).send({ status: false, error: error.message })
-    }
-}
-
+//============================================= UPDATE PRODUCT ==========================================//
 const updateProduct = async (req, res) => {
     try {
         let productId = req.params.productId
@@ -231,5 +218,19 @@ const updateProduct = async (req, res) => {
     }
 }
 
+//================================================== DELETE PRODUCT =======================================//
+const deleteProductById = async function (req, res) {
+    try {
+        let productId = req.params.productId
+        if (!isValidObjectId(productId)) return res.status(400).send({ status: false, message: "Pls provide a valid Product Id" })
+        let checkProduct = await productModel.findOne({ _id: productId, isDeleted: false })
+        if (!checkProduct) return res.status(404).send({ status: false, message: "No Product exists with this ProductId" })
+        let deleteProductById = await productModel.findByIdAndUpdate(productId,
+            { $set: { isDeleted: true, deletedAt: new Date() } }, { new: true })
+        return res.status(200).send({ status: true, message: "Success", data: deleteProductById })
+    } catch (error) {
+        return res.status(500).send({ status: false, error: error.message })
+    }
+}
 
 module.exports = { createProduct, getProductByQuery, getProductById, deleteProductById, updateProduct }
