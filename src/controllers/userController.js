@@ -38,22 +38,22 @@ const createUser = async function (req, res) {
         if (!isValidEmail(email)) {
             return res.status(400).send({ status: false, message: "Please provide valid Email Id" })
         }
-        
-        let emailExist = await userModel.findOne({email:email})
-        if(emailExist){
-            return res.status(400).send({status:false, msg: "Email ID already exist"})
+
+        let emailExist = await userModel.findOne({ email: email })
+        if (emailExist) {
+            return res.status(400).send({ status: false, msg: "Email ID already exist" })
         }
-        
+
         if (!phone) {
             return res.status(400).send({ status: false, message: "Please provide Phone" })
         }
         if (!isValidPhone(phone)) {
             return res.status(400).send({ status: false, message: "Please provide valid Phone Number" })
         }
-       
-        let phoneExist = await userModel.findOne({phone:phone})
-        if(phoneExist){
-            return res.status(400).send({status:false, msg: "Phone number already exist"})
+
+        let phoneExist = await userModel.findOne({ phone: phone })
+        if (phoneExist) {
+            return res.status(400).send({ status: false, msg: "Phone number already exist" })
         }
 
         if (!password) {
@@ -77,7 +77,7 @@ const createUser = async function (req, res) {
         if (!shipping) {
             return res.status(400).send({ status: false, message: "Please provide Shipping Address" })
         }
-        if(typeof shipping != "object")return res.status(400).send({status:false,message:"Shipping must be an Object-type"})
+        if (typeof shipping != "object") return res.status(400).send({ status: false, message: "Shipping must be an Object-type" })
         if (shipping) {
             let { street, city, pincode } = shipping
             if (!street) {
@@ -99,7 +99,7 @@ const createUser = async function (req, res) {
                 return res.status(400).send({ status: false, message: "Please provide valid Pincode" })
             }
         }
-        if(typeof billing != "object")return res.status(400).send({status:false,message:"Billing must be an Object-type"})
+        if (typeof billing != "object") return res.status(400).send({ status: false, message: "Billing must be an Object-type" })
         if (billing) {
             let { street, city, pincode } = billing
             if (!street) {
@@ -176,75 +176,77 @@ const userLogin = async (req, res) => {
 
 //==========================// get user details //========================================
 
-const getUserProfile = async function(req,res) {
-    try{
-         let userId = req.params.userId
-         // UserId Validation :-
-         if(!userId) {
-            return res.status(400).send({status:false,message:"Please provide userId"})
-         }
-         if(!isValidObjectId(userId)) {
-            return res.status(400).send({status:false,message:"userId not valid"})
-         }
-         
-         const findUser = await userModel.findById(userId)
-         if(!findUser) {
-            return res.status(404).send({status:false,message:"User not found"})
-         }
-         res.status(200).send({status:true,message:"User profile details","data":findUser})
+const getUserProfile = async function (req, res) {
+    try {
+        let userId = req.params.userId
+        // UserId Validation :-
+        if (!userId) {
+            return res.status(400).send({ status: false, message: "Please provide userId" })
+        }
+        if (!isValidObjectId(userId)) {
+            return res.status(400).send({ status: false, message: "userId not valid" })
+        }
+
+        const findUser = await userModel.findById(userId)
+        if (!findUser) {
+            return res.status(404).send({ status: false, message: "User not found" })
+        }
+        res.status(200).send({ status: true, message: "User profile details", "data": findUser })
     }
-    catch(err){
-res.status(500).send({status:false,message:err.message})
+    catch (err) {
+        res.status(500).send({ status: false, message: err.message })
     }
 }
 
 //==========================// update user //==============================================
 
-const UpdateUser = async function(req,res){
+const UpdateUser = async function (req, res) {
     try {
         let userId = req.params.userId
+        //-----------------------Authorization-----------------//
+        if (userId != req.userId) return res.status(403).send({ status: false, message: "Unauthorization error" })
         let data = req.body
         let files = req.files
-        if(files.length!=0){
+        if (files.length != 0) {
             data.profileImage = await getImage(files)
         }
-        let {email,phone,password,address} = data
-        if(email){if(!isValidEmail(email))return res.status(400).send({status:false,message:"Pls provide a valid email"})}
-        if(phone){if(!isValidPhone(phone))return res.status(400).send({status:false,message:"Pls provide a valid phone"})}
-        if(password){if(password.length<8 || password.length>15)return res.status(400).send({status:false,message:"Pls provide a password of length between 8 to 15"})}
-        if(password){
+        let { email, phone, password, address } = data
+        if (email) { if (!isValidEmail(email)) return res.status(400).send({ status: false, message: "Pls provide a valid email" }) }
+        if (phone) { if (!isValidPhone(phone)) return res.status(400).send({ status: false, message: "Pls provide a valid phone" }) }
+        if (password) { if (password.length < 8 || password.length > 15) return res.status(400).send({ status: false, message: "Pls provide a password of length between 8 to 15" }) }
+        if (password) {
             const salt = await bcrypt.genSalt(10)
             const secPass = await bcrypt.hash(password, salt)
             data.password = secPass
-        } 
-        if(address){
+        }
+        if (address) {
             address = JSON.parse(address)
             data.address = address
-            if(typeof address!="object")return res.status(400).send({status:false,message:"Address must be an Object-type"})
-            let {shipping,billing}=address
-            if(shipping){
-                if(typeof shipping != "object")return res.status(400).send({status:false,message:"Shipping must be an Object-type"})
-                let {pincode}=shipping
-                if(typeof pincode != "number")return res.status(400).send({status:false,message:"Pincode must be of Number-type"})
+            if (typeof address != "object") return res.status(400).send({ status: false, message: "Address must be an Object-type" })
+            let { shipping, billing } = address
+            if (shipping) {
+                if (typeof shipping != "object") return res.status(400).send({ status: false, message: "Shipping must be an Object-type" })
+                let { pincode } = shipping
+                if (typeof pincode != "number") return res.status(400).send({ status: false, message: "Pincode must be of Number-type" })
             }
-            if(billing){
-                if(typeof billing != "object")return res.status(400).send({status:false,message:"Billing must be an Object-type"})
-                let {pincode}=billing
-                if(typeof pincode != "number")return res.status(400).send({status:false,message:"Pincode must be of Number-type"})
+            if (billing) {
+                if (typeof billing != "object") return res.status(400).send({ status: false, message: "Billing must be an Object-type" })
+                let { pincode } = billing
+                if (typeof pincode != "number") return res.status(400).send({ status: false, message: "Pincode must be of Number-type" })
             }
         }
-        let unique = await userModel.findOne({$or:[{email},{phone}]})
-        if(unique){
-            if(unique.email == email)return res.status(400).send({status:false,message:"Pls provide a Unique email"})
-            else{
-            return res.status(400).send({status:false,message:"Pls provide a Unique phone"})
+        let unique = await userModel.findOne({ $or: [{ email }, { phone }] })
+        if (unique) {
+            if (unique.email == email) return res.status(400).send({ status: false, message: "Pls provide a Unique email" })
+            else {
+                return res.status(400).send({ status: false, message: "Pls provide a Unique phone" })
             }
         }
         let UpdateUser = await userModel.findByIdAndUpdate(userId,
-            {$set:data},{new:true})
-            return res.status(200).send({status:true,message:"User profile updated",data:UpdateUser})
+            { $set: data }, { new: true })
+        return res.status(200).send({ status: true, message: "User profile updated", data: UpdateUser })
     } catch (error) {
-        return res.status(500).send({status:false,message:error.message})
+        return res.status(500).send({ status: false, message: error.message })
     }
 }
 

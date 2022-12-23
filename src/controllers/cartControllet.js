@@ -16,11 +16,14 @@ const createCart = async (req, res) => {
             if (!cartId) return res.status(400).send({ status: false, message: "user cart exist pls provide cart id" })
             if (cartId) {
                 if (!isValidObjectId(cartId)) return res.status(400).send({ status: false, message: "Pls provide valid cartId" })
-                if (cartData._id != cartId) return res.status(400).send({ status: false, message: "this cart id is ont mach" })
+                if (cartData._id != cartId) return res.status(400).send({ status: false, message: "this cart id does not match" })
             }
         }
         let productData = await productModel.findById(productId)
         if (!productData) return res.status(404).send({ status: false, message: "Product not found" })
+        //-----------------------Authorization-----------------//
+        if (userId != req.userId) return res.status(403).send({ status: false, message: "Unauthorization error" })
+        //----------------------------------------------------//
         let { price } = productData
         let Obj = {}
         let CreateCart
@@ -56,4 +59,26 @@ const createCart = async (req, res) => {
 
     }
 }
-module.exports = { createCart }
+
+
+const deleteCart = async (req, res) => {
+    try {
+        let userId = req.params.userId
+        if (!isValidObjectId(userId)) return res.status(400).send({ status: false, message: "Pls provide valid userId" })
+        let cartData = await cartModel.findOne({ userId: userId }).select({ items: 1, totalItems: 1, totalPrice: 1, _id: 1 })
+        if (!cartData) return res.status(404).send({ status: false, message: "cart  not exist" })
+        cartData.items = []
+        cartData.totalItems = 0
+        cartData.totalPrice = 0
+
+        //-----------------------Authorization-----------------//
+        if (userId != req.userId) return res.status(403).send({ status: false, message: "Unauthorization error" })
+        //----------------------------------------------------//
+
+        let finall = await cartModel.findByIdAndUpdate(cartData.id, { $set: cartData }, { new: true })
+        return res.status(200).send({ status: true, message: "success", data: finall })
+    } catch (error) {
+        return res.status(500).send({ status: false, message: error.message })
+    }
+}
+module.exports = { createCart, deleteCart }
