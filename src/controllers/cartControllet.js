@@ -38,7 +38,7 @@ const createCart = async (req, res) => {
                 if (ele.productId == productId) {
                     let a = { productId, quantity: ele.quantity + 1 }
                     cartData.items[i] = a
-                    cartData.totalItems = cartData.totalItems + 1
+                    cartData.totalItems = xyz.length
                     cartData.totalPrice = cartData.totalPrice + price
                     Obj = cartData
                     ab = false
