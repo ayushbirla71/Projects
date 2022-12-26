@@ -1,6 +1,7 @@
 const mongoose = require('mongoose')
 const ObjectId = mongoose.Schema.Types.ObjectId
-const cartModel = new mongoose.Schema({
+
+const cartSchema = new mongoose.Schema({
     userId: { type: ObjectId, required: true, unique: true, ref: "User" },
     items: [{
         _id:{id:false},
@@ -17,4 +18,4 @@ const cartModel = new mongoose.Schema({
     timestamps:true
 })
 
-module.exports=mongoose.model("Cart",cartModel)
+module.exports=mongoose.model("Cart",cartSchema)

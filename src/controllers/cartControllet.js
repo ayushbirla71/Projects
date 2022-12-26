@@ -23,7 +23,7 @@ const createCart = async (req, res) => {
         let productData = await productModel.findById(productId)
         if (!productData) return res.status(404).send({ status: false, message: "Product not found" })
         //-----------------------Authorization-----------------//
-        if (userId != req.userId) return res.status(403).send({ status: false, message: "Unauthorization error" })
+ // if (userId != req.userId) return res.status(403).send({ status: false, message: "Unauthorization error" })
         //----------------------------------------------------//
         let { price } = productData
         let Obj = {}
@@ -129,7 +129,7 @@ const getCart = async function (req, res) {
     }
     let cartdd = await cartModel.findOne({ userId: userId })
     if(cartdd.items.length==0)return res.status(404).send({status:false,message:"no product in this cart"})
-      let cartDetails = await cartModel.findOne({ userId: userId }).populate("items.productId");
+      let cartDetails = await cartModel.findOne({ userId: userId }).populate("items.productId","title price productImage")
       if (!cartDetails)
         return res.status(404).send({ status: false, message: "Cart not found" });
   
@@ -137,9 +137,9 @@ const getCart = async function (req, res) {
       return res.status(200).send({status: true,message: "Cart details with Product details",data: cartDetails,});
     } 
     catch (error) {
-      return res.status(500).send({ status: false, message: error.message });
+      return res.status(500).send({ status: false, message: error.message});
     }
-  }
+}
 ///////////////////////////////////////////////////////
 
 const deleteCart = async (req, res) => {
@@ -153,7 +153,7 @@ const deleteCart = async (req, res) => {
         cartData.totalPrice = 0
 
         //-----------------------Authorization-----------------//
-        if (userId != req.userId) return res.status(403).send({ status: false, message: "Unauthorization error" })
+// if (userId != req.userId) return res.status(403).send({ status: false, message: "Unauthorization error" })
         //----------------------------------------------------//
 
         let finall = await cartModel.findByIdAndUpdate(cartData.id, { $set: cartData }, { new: true })

@@ -4,7 +4,7 @@ const link = require('../controllers/aws')
 const { createUser,userLogin,UpdateUser, getUserProfile } = require('../controllers/userController')
 const {createProduct, getProductByQuery, getProductById, deleteProductById, updateProduct}=require('../controllers/productController')
 const {createCart, updateCart, deleteCart, getCart}=require('../controllers/cartControllet')
-const { createOrder } = require('../controllers/orderController')
+const { createOrder,updateOrder } = require('../controllers/orderController')
 const { authenticationMid } = require('../middleware/auth')
 
 
@@ -33,6 +33,7 @@ router.delete('/users/:userId/cart',deleteCart)
 
 //------------------------Order -----------------//
 router.post('/users/:userId/orders',createOrder)
+router.get('/users/:userId/orders',updateOrder)
 
 
 module.exports = router
