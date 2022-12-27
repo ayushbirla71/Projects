@@ -11,8 +11,7 @@ const createUser = async function (req, res) {
         let data = req.body
         let { fname, lname, email, phone, password, address } = data
         let files = req.files
-        console.log(files)
-        if (files.length==0) {
+        if (files.length == 0) {
             return res.status(400).send({ status: false, message: "Please provide Profile Image" })
         }
         data.profileImage = await getImage(files)
@@ -59,8 +58,9 @@ const createUser = async function (req, res) {
         if (!password) {
             return res.status(400).send({ status: false, message: "Please provide Password" })
         }
+        if (password.length < 8 || password.length > 15) return res.status(400).send({ status: false, message: "Pls provide a password of length between 8 to 15" })
         if (!isValidPassword(password)) {
-            return res.status(400).send({ status: false, message: "Please provide valid Password" })
+            return res.status(400).send({ status: false, message: "password only will be 8 to 15 digits example(Ayush@123)" })
         }
         const salt = await bcrypt.genSalt(10)
         const secPass = await bcrypt.hash(password, salt)
@@ -95,6 +95,7 @@ const createUser = async function (req, res) {
             if (!pincode) {
                 return res.status(400).send({ status: false, message: "Please provide Pincode" })
             }
+            // if (typeof (pincode) != "number") return res.status(400).send({ status: false, message: "Pincode must be of Number-type" })
             if (!isValidPincode(pincode)) {
                 return res.status(400).send({ status: false, message: "Please provide valid Pincode" })
             }
@@ -117,6 +118,7 @@ const createUser = async function (req, res) {
             if (!pincode) {
                 return res.status(400).send({ status: false, message: "Please provide Pincode" })
             }
+            //    if (typeof (pincode) != "number") return res.status(400).send({ status: false, message: "Pincode must be of Number-type" })
             if (!isValidPincode(pincode)) {
                 return res.status(400).send({ status: false, message: "Please provide valid Pincode" })
             }
@@ -137,7 +139,8 @@ const createUser = async function (req, res) {
 const userLogin = async (req, res) => {
     try {
         let { email, password } = req.body
-        if (!email || !password) { return res.status(400).send({ status: false, message: "Pls provide email & password" }) }
+        if (!email) { return res.status(400).send({ status: false, message: "Pls provide email" }) }
+        if (!password) { return res.status(400).send({ status: false, message: "Pls provide password" }) }
         if (!isValidEmail(email)) {
             return res.status(400).send({ status: false, message: "Please provide valid Email Id" })
         }
@@ -160,7 +163,7 @@ const userLogin = async (req, res) => {
                 return res.status(200).send({ status: true, message: "User login successfull", data: { userId: userId, token: token } });
             }
             else {
-                return res.status(400).send({ status: false, message: "incorrect Password" })
+                return res.status(401).send({ status: false, message: "incorrect Password" })
             }
 
         }
@@ -186,6 +189,9 @@ const getUserProfile = async function (req, res) {
         if (!isValidObjectId(userId)) {
             return res.status(400).send({ status: false, message: "userId not valid" })
         }
+        //-----------------------Authorization-----------------//
+        if (userId != req.userId) return res.status(403).send({ status: false, message: "Unauthorization error" })
+        //----------------------------------------------------//
 
         const findUser = await userModel.findById(userId)
         if (!findUser) {
@@ -203,10 +209,14 @@ const getUserProfile = async function (req, res) {
 const UpdateUser = async function (req, res) {
     try {
         let userId = req.params.userId
+        if (!isValidObjectId(userId)) return res.status(400).send({ status: false, message: "Please provide valid User Id " })
+        let checkUser = await userModel.findById(userId)
+        if (!checkUser) return res.status(404).send({ status: false, message: "User not found" })
         //-----------------------Authorization-----------------//
         if (userId != req.userId) return res.status(403).send({ status: false, message: "Unauthorization error" })
         //----------------------------------------------------//
         let data = req.body
+        if (Object.keys(data).length == 0) return res.status(400).send({ status: false, message: 'body cant be empty' })
         let files = req.files
         if (files.length != 0) {
             data.profileImage = await getImage(files)
@@ -228,12 +238,24 @@ const UpdateUser = async function (req, res) {
             if (shipping) {
                 if (typeof shipping != "object") return res.status(400).send({ status: false, message: "Shipping must be an Object-type" })
                 let { pincode } = shipping
-                if (typeof pincode != "number") return res.status(400).send({ status: false, message: "Pincode must be of Number-type" })
+                if (pincode) {
+                    if (!isValidPincode(pincode)) {
+                        return res.status(400).send({ status: false, message: "Please provide valid Pincode" })
+                    }
+                    data.address.shipping.pincode = Number(pincode)
+                }
+                // if (typeof pincode != "number") return res.status(400).send({ status: false, message: "Pincode must be of Number-type" })
             }
             if (billing) {
                 if (typeof billing != "object") return res.status(400).send({ status: false, message: "Billing must be an Object-type" })
                 let { pincode } = billing
-                if (typeof pincode != "number") return res.status(400).send({ status: false, message: "Pincode must be of Number-type" })
+                if (pincode) {
+                    if (!isValidPincode(pincode)) {
+                        return res.status(400).send({ status: false, message: "Please provide valid Pincode" })
+                    }
+                    data.address.billing.pincode = Number(pincode)
+                }
+                // if (typeof pincode != "number") return res.status(400).send({ status: false, message: "Pincode must be of Number-type" })
             }
         }
         let unique = await userModel.findOne({ $or: [{ email }, { phone }] })

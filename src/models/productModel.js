@@ -2,7 +2,7 @@ const mongoose = require('mongoose')
 
 const productSchema = new mongoose.Schema({
 
-    title: { type: String, required: true, unique: true, trim: true },
+    title: { type: String, required: true, unique: true, trim: true ,toLowerCase:true},
     description: { type: String, required: true, trim: true },
     price: { type: Number, required: true },
     currencyId: { type: String, required: true, enum: ["INR"] },

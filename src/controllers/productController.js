@@ -9,6 +9,7 @@ const createProduct = async (req, res) => {
     try {
         let files = req.files
         let ProductData = req.body
+        if(Object.keys(ProductData).length==0)return res.status(400).send({status:false,message:"body cant be empty"})
         let {
             title, description, isFreeShipping, price, currencyId, availableSizes, style, installments, currencyFormat
         } = ProductData
@@ -22,13 +23,18 @@ const createProduct = async (req, res) => {
         if (!description || !isValidString(description)) {
             return res.status(400).send({ status: false, message: "Please provide description" })
         }
-        if (!price)return res.status(400).send({ status: false, message: "Please provide price" })
+        if (!price) return res.status(400).send({ status: false, message: "Please provide price" })
+        if(!/^\d+(,\d{1,2})?$/.test(price))return res.status(400).send({status:false,message:"Price only numeric value"})
         if (!currencyId || !isValidString(currencyId)) {
             return res.status(400).send({ status: false, message: "Please provide currencyId" })
         }
-        if (currencyId != "INR") {
-            return res.status(400).send({ status: false, message: "Please provide INR only" })
+        if (currencyId) {
+            if (currencyId != "INR") {
+                return res.status(400).send({ status: false, message: "Please provide INR only" })
+            }
         }
+        else{currencyId="INR"}
+        if(!availableSizes) return res.status(400).send({status:false,message:"Pls provide available sizes"})
         if (availableSizes) {
             let arr2 = ["S", "XS", "M", "X", "L", "XXL", "XL"]
             let arr = availableSizes.trim().split(",")
@@ -49,10 +55,11 @@ const createProduct = async (req, res) => {
         }
         else { currencyFormat = '₹' }
         ProductData.currencyFormat = '₹'
+        price.te
         price = Number(price)
         ProductData.price = price.toFixed(2)
 
-        if (files.length==0) {
+        if (files.length == 0) {
             return res.status(400).send({ status: false, message: "Please provide Profile Image" })
         }
         let productImage = await getImage(files)
@@ -83,6 +90,7 @@ const getProductByQuery = async function (req, res) {
             obj.availableSizes = { $in: size }
         }
         if (name) {
+            name=name.toLowerCase();
             obj.title = { $regex: name }
         }
         if (priceGreaterThan || priceLessThan) {
@@ -164,7 +172,7 @@ const updateProduct = async (req, res) => {
             obj.description = description
         }
         if (isFreeShipping) {
-            isFreeShipping=JSON.parse(isFreeShipping)
+            isFreeShipping = JSON.parse(isFreeShipping)
             if (typeof (isFreeShipping) != "boolean") {
                 return res.status(400).send({ status: false, message: "Pls provide only boolean value in isFreeShipping" })
             }
@@ -172,6 +180,7 @@ const updateProduct = async (req, res) => {
 
         }
         if (price) {
+            if(!/^\d+(,\d{1,2})?$/.test(price))return res.status(400).send({status:false,message:"Price only numeric value"})
             price = Number(price)
             obj.price = price.toFixed(2)
 
@@ -204,7 +213,7 @@ const updateProduct = async (req, res) => {
         if (!productById || productById.isDeleted == true) {
             return res.status(404).send({ status: false, message: "No product found by this Product id" });
         }
-        if (image.length!=0) {
+        if (image.length != 0) {
             obj.productImage = await getImage(image)
         }
         let updatedData = await productModel.findByIdAndUpdate(productId, { $set: obj }, { new: true })

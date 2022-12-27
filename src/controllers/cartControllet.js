@@ -156,6 +156,11 @@ const deleteCart = async (req, res) => {
     try {
         let userId = req.params.userId
         if (!isValidObjectId(userId)) return res.status(400).send({ status: false, message: "Pls provide valid userId" })
+        const user = await userModel.findById(userId)
+        if (!user) {
+            return res.status(404).send({ status: false, message: "No user found" })
+        }
+
         let cartData = await cartModel.findOne({ userId: userId }).select({ items: 1, totalItems: 1, totalPrice: 1, _id: 1 })
         if (!cartData) return res.status(404).send({ status: false, message: "cart  not exist" })
         cartData.items = []

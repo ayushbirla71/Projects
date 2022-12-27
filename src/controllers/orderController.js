@@ -45,6 +45,8 @@ const updateOrder = async function (req, res) {
         if (!isValidObjectId(userId)) return res.status(400).send({ status: false, message: "Please provide valid User Id " })
         let checkUser = await userModel.findById(userId)
         if (!checkUser) return res.status(404).send({ status: false, message: "User not found" })
+        let cartData= await cartModel.findOne({userId:userId})
+        if(!cartData)return res.status(404).send({status:false,message:"user Cart not found"})
 
         let data = req.body
         if (Object.keys(data).length == 0) return res.status(400).send({ status: false, message: "Please provide Order data" })

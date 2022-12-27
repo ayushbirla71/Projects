@@ -33,7 +33,10 @@ router.delete('/users/:userId/cart',authenticationMid,deleteCart)
 
 //------------------------Order -----------------//
 router.post('/users/:userId/orders',authenticationMid,createOrder)
-router.get('/users/:userId/orders',authenticationMid,updateOrder)
+router.put('/users/:userId/orders',authenticationMid,updateOrder)
+
+//------------------------ error ----------------//
+router.all('/*',(req,res)=>{return res.status(400).send({status:false, message:"pls provide valid path"})})
 
 
 module.exports = router
