@@ -5,7 +5,7 @@ const { createUser,userLogin,UpdateUser, getUserProfile } = require('../controll
 const {createProduct, getProductByQuery, getProductById, deleteProductById, updateProduct}=require('../controllers/productController')
 const {createCart, updateCart, deleteCart, getCart}=require('../controllers/cartControllet')
 const { createOrder,updateOrder } = require('../controllers/orderController')
-const { authenticationMid } = require('../middleware/auth')
+const { authenticationMid, authorizationMid } = require('../middleware/auth')
 
 
 router.get("/test-me",function(req,res){
@@ -15,8 +15,8 @@ router.get("/test-me",function(req,res){
 //-------------------- user ------------------//
 router.post('/register', createUser)
 router.post('/login',userLogin)
-router.get('/user/:userId/profile',authenticationMid, getUserProfile)
-router.put('/user/:userId/profile',authenticationMid,UpdateUser)
+router.get('/user/:userId/profile',authenticationMid,authorizationMid, getUserProfile)
+router.put('/user/:userId/profile',authenticationMid,authorizationMid,UpdateUser)
 
 //------------------- Product ----------------//
 router.post('/products',createProduct)
@@ -26,14 +26,14 @@ router.put('/products/:productId',updateProduct)
 router.delete('/products/:productId',deleteProductById)
 
 //-------------------- Cart ------------------//
-router.post('/users/:userId/cart',authenticationMid,createCart)
-router.put('/users/:userId/cart',authenticationMid,updateCart)
-router.get('/users/:userId/cart',authenticationMid,getCart)
-router.delete('/users/:userId/cart',authenticationMid,deleteCart)
+router.post('/users/:userId/cart',authenticationMid,authorizationMid,createCart)
+router.put('/users/:userId/cart',authenticationMid,authorizationMid,updateCart)
+router.get('/users/:userId/cart',authenticationMid,authorizationMid,getCart)
+router.delete('/users/:userId/cart',authenticationMid,authorizationMid,deleteCart)
 
 //------------------------Order -----------------//
-router.post('/users/:userId/orders',authenticationMid,createOrder)
-router.put('/users/:userId/orders',authenticationMid,updateOrder)
+router.post('/users/:userId/orders',authenticationMid,authorizationMid,createOrder)
+router.put('/users/:userId/orders',authenticationMid,authorizationMid,updateOrder)
 
 //------------------------ error ----------------//
 router.all('/*',(req,res)=>{return res.status(400).send({status:false, message:"pls provide valid path"})})

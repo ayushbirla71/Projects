@@ -22,9 +22,6 @@ const createCart = async (req, res) => {
         }
         let productData = await productModel.findById(productId)
         if (!productData) return res.status(404).send({ status: false, message: "Product not found" })
-        //-----------------------Authorization-----------------//
-        if (userId != req.userId) return res.status(403).send({ status: false, message: "Unauthorization error" })
-        //----------------------------------------------------//
         let { price } = productData
         let Obj = {}
         let CreateCart
@@ -109,10 +106,6 @@ const updateCart = async function (req, res) {
         checkCart.totalItems = itemsarray.length
         checkCart.items = itemsarray
 
-        //-----------------------Authorization-----------------//
-        if (userId != req.userId) return res.status(403).send({ status: false, message: "Unauthorization error" })
-        //----------------------------------------------------//
-
         let updateCart = await cartModel.findByIdAndUpdate(cartId, checkCart, { new: true })
         return res.status(200).send({ status: true, message: "Success", data: updateCart })
 
@@ -132,10 +125,6 @@ const getCart = async function (req, res) {
         if (!user) {
             return res.status(404).send({ status: false, message: "No user found" })
         }
-
-        //-----------------------Authorization-----------------//
-        if (userId != req.userId) return res.status(403).send({ status: false, message: "Unauthorization error" })
-        //----------------------------------------------------//
 
         // let cartdd = await cartModel.findOne({ userId: userId })
         // if (cartdd.items.length == 0) return res.status(404).send({ status: false, message: "no product in this cart" })
@@ -166,10 +155,6 @@ const deleteCart = async (req, res) => {
         cartData.items = []
         cartData.totalItems = 0
         cartData.totalPrice = 0
-
-        //-----------------------Authorization-----------------//
-        if (userId != req.userId) return res.status(403).send({ status: false, message: "Unauthorization error" })
-        //----------------------------------------------------//
 
         let finall = await cartModel.findByIdAndUpdate(cartData.id, { $set: cartData }, { new: true })
         return res.status(204).send({ status: true, message: "success", data: finall })

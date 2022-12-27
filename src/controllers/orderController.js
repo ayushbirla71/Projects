@@ -27,9 +27,6 @@ const createOrder = async (req, res) => {
 
         let userOrder = await orderModel.findOne({ cartId: cartId, status: "pending" })
         if (userOrder) return res.status(201).send({ status: true,message:"Success" ,data: userOrder })
-        //-----------------------Authorization-----------------//
-        if (userId != req.userId) return res.status(403).send({ status: false, message: "Unauthorization error" })
-        //----------------------------------------------------//
 
         let Order = await orderModel.create(cartData)
         return res.status(201).send({ status: true, message: "Success", data: Order })
@@ -66,9 +63,6 @@ const updateOrder = async function (req, res) {
 
 
         if(orderDetail.cancellable==false&&status=="cancelled")return res.status(400).send({status:false,message:"your order cant be cancelled"})
-        //-----------------------Authorization-----------------//
-       // if (userId != req.userId) return res.status(403).send({ status: false, message: "Unauthorized user" })
-        //----------------------------------------------------//
 
         let updateOrder = await orderModel.findOneAndUpdate({ _id: orderId,userId:userId },
             { $set: { status } }, { new: true })

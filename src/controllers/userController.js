@@ -60,7 +60,7 @@ const createUser = async function (req, res) {
         }
         if (password.length < 8 || password.length > 15) return res.status(400).send({ status: false, message: "Pls provide a password of length between 8 to 15" })
         if (!isValidPassword(password)) {
-            return res.status(400).send({ status: false, message: "password only will be 8 to 15 digits example(Ayush@123)" })
+            return res.status(400).send({ status: false, message: "Pls provide valid password example(Ayush@123)" })
         }
         const salt = await bcrypt.genSalt(10)
         const secPass = await bcrypt.hash(password, salt)
@@ -189,9 +189,6 @@ const getUserProfile = async function (req, res) {
         if (!isValidObjectId(userId)) {
             return res.status(400).send({ status: false, message: "userId not valid" })
         }
-        //-----------------------Authorization-----------------//
-        if (userId != req.userId) return res.status(403).send({ status: false, message: "Unauthorization error" })
-        //----------------------------------------------------//
 
         const findUser = await userModel.findById(userId)
         if (!findUser) {
@@ -212,9 +209,6 @@ const UpdateUser = async function (req, res) {
         if (!isValidObjectId(userId)) return res.status(400).send({ status: false, message: "Please provide valid User Id " })
         let checkUser = await userModel.findById(userId)
         if (!checkUser) return res.status(404).send({ status: false, message: "User not found" })
-        //-----------------------Authorization-----------------//
-        if (userId != req.userId) return res.status(403).send({ status: false, message: "Unauthorization error" })
-        //----------------------------------------------------//
         let data = req.body
         if (Object.keys(data).length == 0) return res.status(400).send({ status: false, message: 'body cant be empty' })
         let files = req.files
