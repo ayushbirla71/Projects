@@ -16,14 +16,8 @@ const createOrder = async (req, res) => {
         if (!isValidObjectId(cartId)) return res.status(400).send({ status: false, message: "Pls provide a Valid cartId" })
         let cartData = await cartModel.findById(cartId).select({ _id: 0, __v: 0, createdAt: 0, updatedAt: 0 }).lean()
         if (!cartData) return res.status(404).send({ status: false, message: "No Cart found with this CartId" })
-
         let totalQuantity = 0
         cartData.items.map((ele) => { totalQuantity += ele.quantity })
-
-        // for(let i=0;i<cartData.items.length;i++){
-        //     let ele=cartData.items[i]
-        //     totalQuantity += ele.quantity
-        // }
 
         cartData.totalQuantity = totalQuantity
         if (cancellable) {
@@ -31,8 +25,14 @@ const createOrder = async (req, res) => {
             cartData.cancellable = cancellable
         }
 
+        let userOrder = await orderModel.findOne({ cartId: cartId, status: "pending" })
+        if (userOrder) return res.status(201).send({ status: true,message:"Success" ,data: userOrder })
+        //-----------------------Authorization-----------------//
+        if (userId != req.userId) return res.status(403).send({ status: false, message: "Unauthorization error" })
+        //----------------------------------------------------//
+
         let Order = await orderModel.create(cartData)
-        return res.status(201).send({ status: true, message: "success", data: Order })
+        return res.status(201).send({ status: true, message: "Success", data: Order })
 
     } catch (error) {
         return res.status(500).send({ status: false, message: error.message })
@@ -52,18 +52,29 @@ const updateOrder = async function (req, res) {
         let { orderId, status } = data
         if (!orderId) return res.status(400).send({ status: false, message: "Please provide Order Id " })
         if (!isValidObjectId(orderId)) return res.status(400).send({ status: false, message: "Please provide valid Order Id " })
-        const orderDetail = await orderModel.findOne({ _id: orderId, isDeleted: false })
+        const orderDetail = await orderModel.findOne({ _id: orderId,userId:userId, isDeleted: false })///add userId
         if (!orderDetail) return res.status(404).send({ status: false, message: "No Order found" })
 
         if (!status) return res.status(400).send({ status: false, message: "Please provide status " })
         if (!["completed", "cancelled"].includes(status)) return res.status(400).send({ status: false, message: "status should be from [completed, cancelled]" })
+      //  if (orderDetail.status != "pending") return res.status(400).send({ status: false, message: "Order can be update only once" })
 
-        let updateOrder = await orderModel.findOneAndUpdate({ _id: orderId, cancellable: true },
+        if(orderDetail.status=="completed") return res.status(400).send({status:true,message:"your order is alredy completed"})
+        if(orderDetail.status=="cancelled") return res.status(400).send({status:true,message:"your order is alredy cancelled"})
+
+
+        if(orderDetail.cancellable==false&&status=="cancelled")return res.status(400).send({status:false,message:"your order cant be cancelled"})
+        //-----------------------Authorization-----------------//
+       // if (userId != req.userId) return res.status(403).send({ status: false, message: "Unauthorized user" })
+        //----------------------------------------------------//
+
+        let updateOrder = await orderModel.findOneAndUpdate({ _id: orderId,userId:userId },
             { $set: { status } }, { new: true })
-        if (!updateOrder) return res.status(400).send({ status: false, message: " This order is not cancellable" })
+        // if (!updateOrder) return res.status(400).send({ status: false, message: " This order is not cancellable" })
 
         await cartModel.findOneAndUpdate({ userId },
             { $set: { items: [], totalItems: 0, totalPrice: 0 } })
+
 
         return res.status(200).send({ status: true, message: "Success", data: updateOrder })
     } catch (error) {

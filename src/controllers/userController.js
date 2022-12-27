@@ -205,6 +205,7 @@ const UpdateUser = async function (req, res) {
         let userId = req.params.userId
         //-----------------------Authorization-----------------//
         if (userId != req.userId) return res.status(403).send({ status: false, message: "Unauthorization error" })
+        //----------------------------------------------------//
         let data = req.body
         let files = req.files
         if (files.length != 0) {

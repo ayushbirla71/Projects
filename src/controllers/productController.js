@@ -22,9 +22,7 @@ const createProduct = async (req, res) => {
         if (!description || !isValidString(description)) {
             return res.status(400).send({ status: false, message: "Please provide description" })
         }
-        if (!price) {
-            return res.status(400).send({ status: false, message: "Please provide price" })
-        }
+        if (!price)return res.status(400).send({ status: false, message: "Please provide price" })
         if (!currencyId || !isValidString(currencyId)) {
             return res.status(400).send({ status: false, message: "Please provide currencyId" })
         }

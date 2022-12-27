@@ -14,10 +14,14 @@ put
 create product
 //check price is number/decimal
 //currenctId handled from controller
-//validation of image file
+
 //must provide defferent response for mandatory and valid key
 //not handled availableSize error when not provided
 get product by query
 //find name by upper or lower case
 update product
 //isFreeShiping not working
+delete cart
+//check user exists or not
+update order
+//check cart exists or not
