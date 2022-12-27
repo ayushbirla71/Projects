@@ -9,9 +9,7 @@ const authenticationMid = async function (req, res, next) {
             return res.status(400).send({ status: false, message: "bearer token is missing" })
         }
         bearerToken = bearerToken.split(" ")[1]
-        const decode = jwt.verify(
-            bearerToken,
-            secreteKey,
+        jwt.verify(bearerToken,secreteKey,
             function (err, result) {
                 if (err) return res.status(401).send({ status: false, message: err })
                 else {

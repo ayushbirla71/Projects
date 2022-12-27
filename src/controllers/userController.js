@@ -11,8 +11,8 @@ const createUser = async function (req, res) {
         let data = req.body
         let { fname, lname, email, phone, password, address } = data
         let files = req.files
-
-        if (!files) {
+        console.log(files)
+        if (files.length==0) {
             return res.status(400).send({ status: false, message: "Please provide Profile Image" })
         }
         data.profileImage = await getImage(files)
@@ -160,7 +160,7 @@ const userLogin = async (req, res) => {
                 return res.status(200).send({ status: true, message: "User login successfull", data: { userId: userId, token: token } });
             }
             else {
-                return res.status(401).send({ status: false, message: "incorrect Password" })
+                return res.status(400).send({ status: false, message: "incorrect Password" })
             }
 
         }

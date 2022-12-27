@@ -54,8 +54,7 @@ const createProduct = async (req, res) => {
         price = Number(price)
         ProductData.price = price.toFixed(2)
 
-        console.log(ProductData.price)
-        if (!files) {
+        if (files.length==0) {
             return res.status(400).send({ status: false, message: "Please provide Profile Image" })
         }
         let productImage = await getImage(files)
@@ -127,7 +126,7 @@ const getProductById = async function (req, res) {
         if (!productById) {
             return res.status(404).send({ status: false, message: "No product found by this Product id" });
         }
-        return res.status(200).send({ status: true, message: "success", data: productById })
+        return res.status(200).send({ status: true, message: "Success", data: productById })
     }
     catch (err) {
         return res.status(500).send({ status: false, error: err.message })
@@ -140,7 +139,7 @@ const updateProduct = async (req, res) => {
         let productId = req.params.productId
         let image = req.files
         let ProductData = req.body
-        if (Object.keys(ProductData).length == 0) { return res.status(400).send({ status: false, Message: "" }) }
+        if (Object.keys(ProductData).length == 0) { return res.status(400).send({ status: false, message: "Pls provide atleast one field to Update" }) }
         if (!isValidObjectId(productId)) {
             return res.status(400).send({ status: false, message: " Enter a valid productId" })
         }
@@ -207,7 +206,7 @@ const updateProduct = async (req, res) => {
         if (!productById || productById.isDeleted == true) {
             return res.status(404).send({ status: false, message: "No product found by this Product id" });
         }
-        if (image) {
+        if (image.length!=0) {
             obj.productImage = await getImage(image)
         }
         let updatedData = await productModel.findByIdAndUpdate(productId, { $set: obj }, { new: true })

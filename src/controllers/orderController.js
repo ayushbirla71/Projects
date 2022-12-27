@@ -43,7 +43,7 @@ const updateOrder = async function (req, res) {
     try {
         let userId = req.params.userId
         if (!isValidObjectId(userId)) return res.status(400).send({ status: false, message: "Please provide valid User Id " })
-        let checkUser = await userModel.findById({ userId })
+        let checkUser = await userModel.findById(userId)
         if (!checkUser) return res.status(404).send({ status: false, message: "User not found" })
 
         let data = req.body

@@ -1,1 +1,23 @@
 /node_modules
+//email regex change
+//res of pasword regex change
+//handle length bw 8 - 15
+//pincode only be number
+//changement in userModel
+login
+//change the status of incorrect pasword
+//have to return individual response for email and password not provided
+get
+//must add authentication
+put
+//must add valid userId and user exists
+create product
+//check price is number/decimal
+//currenctId handled from controller
+//validation of image file
+//must provide defferent response for mandatory and valid key
+//not handled availableSize error when not provided
+get product by query
+//find name by upper or lower case
+update product
+//isFreeShiping not working
