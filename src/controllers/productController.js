@@ -1,7 +1,7 @@
 const productModel = require('../models/productModel')
 const { getImage } = require("./aws")
 const jwt = require('jsonwebtoken')
-const { isValidName, isValidEmail, isValidObjectId, isValidString, isValidPhone, isValidPassword, isValidPincode, isValidBody } = require('../validators/validations')
+const { isValidObjectId, isValidString, isValidBody } = require('../validators/validations')
 
 //===========================// create product //===========================================
 
@@ -10,28 +10,18 @@ const createProduct = async (req, res) => {
         let files = req.files
         let ProductData = req.body
         if(Object.keys(ProductData).length==0)return res.status(400).send({status:false,message:"body cant be empty"})
-        let {
-            title, description, isFreeShipping, price, currencyId, availableSizes, style, installments, currencyFormat
-        } = ProductData
-        if (!title || !isValidString(title)) {
-            return res.status(400).send({ status: false, message: "Please provide title" })
-        }
+        let {title, description, isFreeShipping, price, currencyId, availableSizes, style, installments, currencyFormat} = ProductData
+        if (!title)return res.status(400).send({ status: false, message: "Please provide title" })
+        if (!isValidString(title)) {return res.status(400).send({ status: false, message: "Please provide valid title" })}
         let duplicateTitle = await productModel.findOne({ title })
-        if (duplicateTitle) {
-            return res.status(400).send({ status: false, msg: "Title is already exist" })
-        }
-        if (!description || !isValidString(description)) {
-            return res.status(400).send({ status: false, message: "Please provide description" })
-        }
+        if (duplicateTitle)return res.status(400).send({ status: false, msg: "Title is already exist" })
+        if (!description)return res.status(400).send({ status: false, message: "Please provide description" })
+        if (!isValidString(description))return res.status(400).send({ status: false, message: "Please provide valid description" })
         if (!price) return res.status(400).send({ status: false, message: "Please provide price" })
-        if(!/^\d+(,\d{1,2})?$/.test(price))return res.status(400).send({status:false,message:"Price only numeric value"})
-        if (!currencyId || !isValidString(currencyId)) {
-            return res.status(400).send({ status: false, message: "Please provide currencyId" })
-        }
+        if(!/^\d+.\d{0,2}?$/.test(price))return res.status(400).send({status:false,message:"Price only numeric value"})
+        if (!currencyId)return res.status(400).send({ status: false, message: "Please provide currencyId" })
         if (currencyId) {
-            if (currencyId != "INR") {
-                return res.status(400).send({ status: false, message: "Please provide INR only" })
-            }
+            if (currencyId != "INR")return res.status(400).send({ status: false, message: "Please provide INR only" })
         }
         else{currencyId="INR"}
         if(!availableSizes) return res.status(400).send({status:false,message:"Pls provide available sizes"})
@@ -41,7 +31,6 @@ const createProduct = async (req, res) => {
             const multipleExist = arr.every(value => {
                 return arr2.includes(value);
             });
-
             if (multipleExist == false) {
                 return res.status(400).send({ status: false, message: "pls provide valid size(S, XS, M, X, L, XXL, XL)" })
 
@@ -55,7 +44,7 @@ const createProduct = async (req, res) => {
         }
         else { currencyFormat = '₹' }
         ProductData.currencyFormat = '₹'
-        price.te
+        
         price = Number(price)
         ProductData.price = price.toFixed(2)
 
@@ -146,29 +135,17 @@ const updateProduct = async (req, res) => {
         let image = req.files
         let ProductData = req.body
         if (Object.keys(ProductData).length == 0) { return res.status(400).send({ status: false, message: "Pls provide atleast one field to Update" }) }
-        if (!isValidObjectId(productId)) {
-            return res.status(400).send({ status: false, message: " Enter a valid productId" })
-        }
-        let {
-            title, description, isFreeShipping, price, currencyId, availableSizes, style, installments, currencyFormat
-        } = ProductData
+        if (!isValidObjectId(productId))return res.status(400).send({ status: false, message: " Enter a valid productId" })
+        let { title, description, isFreeShipping, price, availableSizes, style, installments} = ProductData
         let obj = {}
         if (title) {
-            if (!isValidString(title)) {
-                return res.status(400).send({ status: false, message: "Please provide valid title" })
-            }
+            if (!isValidString(title))return res.status(400).send({ status: false, message: "Please provide valid title" })
             let duplicateTitle = await productModel.findOne({ title })
-            if (duplicateTitle) {
-                return res.status(400).send({ status: false, msg: "Title is already exist" })
-
-            }
+            if (duplicateTitle)return res.status(400).send({ status: false, msg: "Title is already exist" })
             obj.title = title
-
         }
         if (description) {
-            if (!isValidString(description)) {
-                return res.status(400).send({ status: false, message: "Please provide description" })
-            }
+            if (!isValidString(description))return res.status(400).send({ status: false, message: "Please provide description" })
             obj.description = description
         }
         if (isFreeShipping) {
@@ -177,13 +154,11 @@ const updateProduct = async (req, res) => {
                 return res.status(400).send({ status: false, message: "Pls provide only boolean value in isFreeShipping" })
             }
             obj.isFreeShipping = isFreeShipping
-
         }
         if (price) {
             if(!/^\d+(,\d{1,2})?$/.test(price))return res.status(400).send({status:false,message:"Price only numeric value"})
             price = Number(price)
             obj.price = price.toFixed(2)
-
         }
         if (availableSizes) {
             let arr2 = ["S", "XS", "M", "X", "L", "XXL", "XL"]
@@ -194,28 +169,20 @@ const updateProduct = async (req, res) => {
 
             if (multipleExist == false) {
                 return res.status(400).send({ status: false, message: "pls provide valid size(S, XS, M, X, L, XXL, XL)" })
-
             }
             obj.availableSizes = arr
         }
         if (style) {
-            if (!isValidString(style)) {
-                return res.status(400).send({ status: false, message: "Please provide valid style" })
-            }
+            if (!isValidString(style))return res.status(400).send({ status: false, message: "Please provide valid style" })
             obj.style = style
         }
-        if (installments) {
-            obj.installments = installments
-
-        }
+        if (installments) { obj.installments = installments }
         const productById = await productModel.findById(productId)
 
         if (!productById || productById.isDeleted == true) {
             return res.status(404).send({ status: false, message: "No product found by this Product id" });
         }
-        if (image.length != 0) {
-            obj.productImage = await getImage(image)
-        }
+        if (image.length != 0) {obj.productImage = await getImage(image)}
         let updatedData = await productModel.findByIdAndUpdate(productId, { $set: obj }, { new: true })
         return res.status(200).send({ status: true, message: "Update sccessuly", data: updatedData })
     }
