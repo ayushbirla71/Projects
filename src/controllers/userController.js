@@ -185,9 +185,16 @@ const UpdateUser = async function (req, res) {
             data.password = secPass
         }
         if (address) {
-            address = JSON.parse(address)
+            try{
+                address = JSON.parse(address)
+
+            }
+            catch{
+                return res.status(400).send({ status: false, message: "Address must be an Object-type" })
+            }
+          //  if(address.length!=1)return res.status(400).send({ status: false, message: "Address must be an Object-type" })
+           // if (typeof address != "object") return res.status(400).send({ status: false, message: "Address must be an Object-type" })
             data.address = address
-            if (typeof address != "object") return res.status(400).send({ status: false, message: "Address must be an Object-type" })
             let { shipping, billing } = address
             if (shipping) {
                 if (typeof shipping != "object") return res.status(400).send({ status: false, message: "Shipping must be an Object-type" })

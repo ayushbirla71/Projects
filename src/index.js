@@ -15,5 +15,11 @@ mongoose.connect("mongodb+srv://anurag:jhansi112233@my-cluster.cummqwt.mongodb.n
 
 app.use('/',route)
 
+
+app.use((req, res) => {
+    res.status(404).send({ status: false, message: "Url not found" })
+})
+
+
 app.listen(process.env.PORT ||3000,function ()
 {console.log("Express app is running on port "+(process.env.PORT ||3000))})
